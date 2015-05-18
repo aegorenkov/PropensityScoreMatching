@@ -1,7 +1,0 @@
-setup.py
-PropensityScoreMatching/__init__.py
-psm.egg-info/PKG-INFO
-psm.egg-info/SOURCES.txt
-psm.egg-info/dependency_links.txt
-psm.egg-info/not-zip-safe
-psm.egg-info/top_level.txt
