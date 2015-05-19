@@ -83,7 +83,8 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         design_matrix = DATASET1[names]
         design_matrix['Intercept'] = 1
         psm = PSM.PropensityScoreMatching()
-        pscore_fit = psm.fit(treated, design_matrix)
+        psm.fit(treated, design_matrix)
+        pscore_fit = psm.pscore
         pscore_actual = DATASET1['_pscore']
         mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
         self.assertAlmostEqual(mean_diff, 0)
@@ -94,7 +95,8 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         design_matrix = DATASET2[names]
         design_matrix['Intercept'] = 1
         psm = PSM.PropensityScoreMatching()
-        pscore_fit = psm.fit(treated, design_matrix)
+        psm.fit(treated, design_matrix)
+        pscore_fit = psm.pscore
         pscore_actual = DATASET2['_pscore']
         mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
         self.assertAlmostEqual(mean_diff, 0)
@@ -105,10 +107,27 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         design_matrix = DATASET3[names]
         design_matrix['Intercept'] = 1
         psm = PSM.PropensityScoreMatching()
-        pscore_fit = psm.fit(treated, design_matrix)
+        psm.fit(treated, design_matrix)
+        pscore_fit = psm.pscore
         pscore_actual = DATASET3['_pscore']
         mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
         self.assertAlmostEqual(mean_diff, 0)
+
+# 
+#     def test_set1_unmatched_treated_mean_should_equal_6349():
+#         names = DATASET2.keys()[1:2]        
+#         treated = DATASET1['Treated']
+#         design_matrix = DATASET2[names]
+#         design_matrix['Intercept'] = 1
+#         psm = PSM.PropensityScoreMatching()
+#         pscores = psm.fit(treated, design_matrix)
+#         pscores.match()
+
+        
+    #def test_set1_matched_treated_mean_should_equal_6349()
+    #def test_set1_unmatched_control_mean_should_equal_4554():
+    #def test_set1_unmatched_control_mean_should_equal_5341():
+    #def test_set1_ATT_should_equal_1007
 
 class TestMahalanobisMatchingClass(unittest.TestCase):
     pass
