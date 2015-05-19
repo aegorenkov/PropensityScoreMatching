@@ -54,30 +54,36 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_pscores_should_equal_data_pscores(self):
         treated = DATASET1['Treated']
-        design_matrix = DATASET1['Age']
+        names = DATASET1.keys()[1:2]
+        design_matrix = DATASET1[names]
+        design_matrix['Intercept'] = 1
         psm = PSM.PropensityScoreMatching()
         pscore_fit = psm.fit(treated, design_matrix)
         pscore_actual = DATASET1['_pscore']
-        ss_diff = np.sum((pscore_fit-pscore_actual)**2)
-        self.assertAlmostEqual(ss_diff, 0)
+        mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
+        self.assertAlmostEqual(mean_diff, 0)
 
     def test_set2_pscores_should_equal_data_pscores(self):
         treated = DATASET2['Treated']
-        design_matrix = DATASET2['Age']
+        names = DATASET2.keys()[1:2]
+        design_matrix = DATASET2[names]
+        design_matrix['Intercept'] = 1
         psm = PSM.PropensityScoreMatching()
         pscore_fit = psm.fit(treated, design_matrix)
         pscore_actual = DATASET2['_pscore']
-        ss_diff = np.sum((pscore_fit-pscore_actual)**2)
-        self.assertAlmostEqual(ss_diff, 0)
+        mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
+        self.assertAlmostEqual(mean_diff, 0)
 
     def test_set3_pscores_should_equal_data_pscores(self):
         treated = DATASET3['Treated']
-        design_matrix = DATASET3['Age']
+        names = DATASET3.keys()[1:2]
+        design_matrix = DATASET3[names]
+        design_matrix['Intercept'] = 1
         psm = PSM.PropensityScoreMatching()
         pscore_fit = psm.fit(treated, design_matrix)
         pscore_actual = DATASET3['_pscore']
-        ss_diff = np.sum((pscore_fit-pscore_actual)**2)
-        self.assertAlmostEqual(ss_diff, 0)
+        mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
+        self.assertAlmostEqual(mean_diff, 0)
 
 class TestMahalanobisMatchingClass(unittest.TestCase):
     pass
