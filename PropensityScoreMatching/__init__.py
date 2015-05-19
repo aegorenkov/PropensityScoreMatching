@@ -11,7 +11,7 @@ class Match(object):
     '''
     def __init__(self, match_type='neighbor'):
         self.match_type = match_type
-        
+
     def match(self, covariates):
         pass
 
@@ -22,7 +22,7 @@ class PropensityScoreMatching(object):
     '''
     def __init__(self, model='logit'):
         self.model = model
-        
+
     def fit(self, treated, design_matrix):
         '''
         Run logit or probit and return propensity score column
@@ -36,4 +36,3 @@ class MahalanobisMatching(object):
     '''
     def __init__(self):
         pass
-    
