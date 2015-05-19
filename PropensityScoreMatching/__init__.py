@@ -4,6 +4,9 @@ Created on Mon May 18 15:09:03 2015
 
 @author: Alexander
 """
+
+import statsmodels.api as sm
+
 class Match(object):
     '''
     Perform matching algorithm on input data and return a list of indicies
@@ -27,7 +30,12 @@ class PropensityScoreMatching(object):
         '''
         Run logit or probit and return propensity score column
         '''
-        pass
+        link = sm.families.links.logit
+        family = sm.families.Binomial(link)
+        reg = sm.GLM(treated, design_matrix, family=family)
+        fitted_reg = reg.fit()
+        pscore = fitted_reg.fittedvalues
+        return pscore
 
 class MahalanobisMatching(object):
     '''
