@@ -116,8 +116,9 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         treated, design_matrix = self.load_data(DATASET1, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
+        psm.match()
 
-        id_list = psm.match()
+        id_list = psm.get_matches()
         test_list, true_list = DATASET1["_id"][id_list], DATASET1["_n1"]
         #Raise assertionError if id_list cannot match the order if id and n1
         np.testing.assert_array_equal(test_list, true_list)
@@ -131,8 +132,9 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         treated, design_matrix = self.load_data(DATASET2, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
+        psm.match()
 
-        id_list = psm.match()
+        id_list = psm.get_matches()
         test_list, true_list = DATASET2["_id"][id_list], DATASET2["_n1"]
         #Raise assertionError if id_list cannot match the order if id and n1
         np.testing.assert_array_equal(test_list, true_list)
@@ -146,8 +148,8 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         treated, design_matrix = self.load_data(DATASET3, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
-
-        id_list = psm.match()
+        psm.match()
+        id_list = psm.get_matches()
         test_list, true_list = DATASET3["_id"][id_list], DATASET3["_n1"]
         #Raise assertionError if id_list cannot match the order if id and n1
         np.testing.assert_array_equal(test_list, true_list)
@@ -157,20 +159,140 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         true_list = true_list[np.isfinite(true_list)]
         self.assertTrue(np.array_equal(test_list, true_list))
 
-#     def test_set1_unmatched_treated_mean_should_equal_6349():
-#         names = DATASET2.keys()[1:2]        
-#         treated = DATASET1['Treated']
-#         design_matrix = DATASET2[names]
-#         design_matrix['Intercept'] = 1
-#         psm = PSM.PropensityScoreMatching()
-#         pscores = psm.fit(treated, design_matrix)
-#         pscores.match()
+    def test_set1_unmatched_treated_mean_should_equal_6349(self):
+        treated, design_matrix = self.load_data(DATASET1, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET1['RE78'])
+        res = psm.get_results('unmatched_treated_mean')
+        self.assertAlmostEqual(res, 6349.1435, places=4)
 
+    def test_set1_matched_treated_mean_should_equal_6349(self):
+        treated, design_matrix = self.load_data(DATASET1, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET1['RE78'])
+        res = psm.get_results('matched_treated_mean')
+        self.assertAlmostEqual(res, 6349.1435, places=4)
+
+    def test_set1_unmatched_control_mean_should_equal_4554(self):
+        treated, design_matrix = self.load_data(DATASET1, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET1['RE78'])
+        res = psm.get_results('unmatched_control_mean')
+        self.assertAlmostEqual(res, 4554.80112, places=4)
+
+    def test_set1_matched_control_mean_should_equal_5341(self):
+        treated, design_matrix = self.load_data(DATASET1, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET1['RE78'])
+        res = psm.get_results('matched_control_mean')
+        self.assertAlmostEqual(res, 5341.43016, places=4)
+
+    def test_set1_ATT_should_equal_1007(self):
+        treated, design_matrix = self.load_data(DATASET1, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET1['RE78'])
+        res = psm.get_results('ATT')
+        self.assertAlmostEqual(res, 1007.71335, places=4)
         
-    #def test_set1_matched_treated_mean_should_equal_6349()
-    #def test_set1_unmatched_control_mean_should_equal_4554():
-    #def test_set1_unmatched_control_mean_should_equal_5341():
-    #def test_set1_ATT_should_equal_1007
+    def test_set2_unmatched_treated_mean_should_equal_6349(self):
+        treated, design_matrix = self.load_data(DATASET2, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET2['RE78'])
+        res = psm.get_results('unmatched_treated_mean')
+        self.assertAlmostEqual(res, 6349.1435, places=4)
+
+    def test_set2_matched_treated_mean_should_equal_6349(self):
+        treated, design_matrix = self.load_data(DATASET2, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET2['RE78'])
+        res = psm.get_results('matched_treated_mean')
+        self.assertAlmostEqual(res, 6349.1435, places=4)
+
+    def test_set2_unmatched_control_mean_should_equal_4554(self):
+        treated, design_matrix = self.load_data(DATASET2, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET2['RE78'])
+        res = psm.get_results('unmatched_control_mean')
+        self.assertAlmostEqual(res, 4554.80112, places=4)
+
+    def test_set2_matched_control_mean_should_equal_3397(self):
+        treated, design_matrix = self.load_data(DATASET2, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET2['RE78'])
+        res = psm.get_results('matched_control_mean')
+        self.assertAlmostEqual(res, 3397.68807, places=4)
+
+    def test_set2_ATT_should_equal_2951(self):
+        treated, design_matrix = self.load_data(DATASET2, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET2['RE78'])
+        res = psm.get_results('ATT')
+        self.assertAlmostEqual(res, 2951.45543, places=4)    
+
+    def test_set3_unmatched_treated_mean_should_equal_6349(self):
+        treated, design_matrix = self.load_data(DATASET3, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET3['RE78'])
+        res = psm.get_results('unmatched_treated_mean')
+        self.assertAlmostEqual(res, 6349.1435, places=4)
+
+    def test_set3_matched_treated_mean_should_equal_6349(self):
+        treated, design_matrix = self.load_data(DATASET3, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET3['RE78'])
+        res = psm.get_results('matched_treated_mean')
+        self.assertAlmostEqual(res, 6349.1435, places=4)
+
+    def test_set3_unmatched_control_mean_should_equal_4554(self):
+        treated, design_matrix = self.load_data(DATASET3, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET3['RE78'])
+        res = psm.get_results('unmatched_control_mean')
+        self.assertAlmostEqual(res, 4554.80112, places=4)
+
+    def test_set3_matched_control_mean_should_equal_4148(self):
+        treated, design_matrix = self.load_data(DATASET3, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET3['RE78'])
+        res = psm.get_results('matched_control_mean')
+        self.assertAlmostEqual(res, 4148.65249, places=4)
+
+    def test_set3_ATT_should_equal_2200(self):
+        treated, design_matrix = self.load_data(DATASET3, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+        psm.match()
+        psm.results(DATASET3['RE78'])
+        res = psm.get_results('ATT')
+        self.assertAlmostEqual(res, 2200.49101, places=4)    
 
 class TestMahalanobisMatchingClass(unittest.TestCase):
     pass
