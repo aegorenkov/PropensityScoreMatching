@@ -203,7 +203,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.results(DATASET1['RE78'])
         res = psm.get_results('ATT')
         self.assertAlmostEqual(res, 1007.71335, places=4)
-        
+
     def test_set2_unmatched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
         psm = PSM.PropensityScoreMatching()
@@ -247,7 +247,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.match()
         psm.results(DATASET2['RE78'])
         res = psm.get_results('ATT')
-        self.assertAlmostEqual(res, 2951.45543, places=4)    
+        self.assertAlmostEqual(res, 2951.45543, places=4)
 
     def test_set3_unmatched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
@@ -292,7 +292,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.match()
         psm.results(DATASET3['RE78'])
         res = psm.get_results('ATT')
-        self.assertAlmostEqual(res, 2200.49101, places=4)    
+        self.assertAlmostEqual(res, 2200.49101, places=4)
 
 class TestMahalanobisMatchingClass(unittest.TestCase):
     pass

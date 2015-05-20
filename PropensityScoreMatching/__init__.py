@@ -10,10 +10,8 @@ import pandas as pd
 import numpy as np
 
 class Match(object):
-    '''
-    Perform matching algorithm on input data and return a list of indicies
-    corresponding to matches.
-    '''
+    """Perform matching algorithm on input data and return a list of indicies
+    corresponding to matches."""
     def __init__(self, match_type='neighbor'):
         self.match_type = match_type
 
@@ -42,17 +40,41 @@ class Match(object):
         return matches
 
 class PropensityScoreMatching(object):
-    '''
-    Propensity Score Matching in Python.
-    Use psmatch2 to confirm accuracy.
-    '''
+    """Propensity Score Matching in Python."""
     def __init__(self, model='logit'):
         self.model = model
+        self._matches = None
+        self.treated = None
+        self.design_matrix = None
+        self.pscore = None
+        self._results = {
+            'ATT': None,
+            'unmatched_treated_mean': None,
+            'matched_treated_mean': None,
+            'unmatched_control_mean': None,
+            'matched_control_mean': None
+            }
+
+    def results(self, outcome):
+        treatment = self.treated == 1
+        control = self.treated == 0
+        self._results['unmatched_treated_mean'] = np.mean(outcome[treatment])
+        self._results['unmatched_control_mean'] = np.mean(outcome[control])
+
+        match_treatment = outcome[np.isfinite(self._matches)]
+        match_control = outcome[self._matches]
+        match_control = match_control[np.isfinite(match_control)]
+        self._results['matched_treated_mean'] = np.mean(match_treatment)
+        self._results['matched_control_mean'] = np.mean(match_control)
+
+        ATT = np.mean(np.subtract(match_treatment, match_control))
+        self._results['ATT'] = ATT
+
+    def get_results(self, query):
+        return self._results[query]
 
     def fit(self, treated, design_matrix):
-        '''
-        Run logit or probit and return propensity score column
-        '''
+        """Run logit or probit and return propensity score column"""
         link = sm.families.links.logit
         family = sm.families.Binomial(link)
         reg = sm.GLM(treated, design_matrix, family=family)
@@ -61,20 +83,20 @@ class PropensityScoreMatching(object):
         self.treated = treated
         self.design_matrix = design_matrix
         self.pscore = pscore
-        
-    def match(self, match_method = 'neighbor'):
+
+    def match(self, match_method='neighbor'):
+        """Take fitted propensity scores and match between treatment and
+        control groups"""
         #check for valid method
         if match_method == 'neighbor':
-            algorithm = Match(match_type = 'neighbor')
+            algorithm = Match(match_type='neighbor')
         #Check that treat and pscore are not empty
-        matches = algorithm.match(self.treated, self.pscore)
-        return matches
-        
+        self._matches = algorithm.match(self.treated, self.pscore)
+
+    def get_matches(self):
+        return self._matches
 
 class MahalanobisMatching(object):
-    '''
-    Mahalanobis matching in Python.
-    Use psmatch2 to confirm accuracy.
-    '''
+    """Mahalanobis matching in Python."""
     def __init__(self):
         pass
