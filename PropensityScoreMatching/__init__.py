@@ -58,12 +58,17 @@ class PropensityScoreMatching(object):
         reg = sm.GLM(treated, design_matrix, family=family)
         fitted_reg = reg.fit()
         pscore = fitted_reg.fittedvalues
+        self.treated = treated
+        self.design_matrix = design_matrix
         self.pscore = pscore
         
-#    def match(self, match_method = 'neighbor'):
-#        if match_method == 'neighbor':
-#            algorithm = Match(match_type = 'neighbor')
-        
+    def match(self, match_method = 'neighbor'):
+        #check for valid method
+        if match_method == 'neighbor':
+            algorithm = Match(match_type = 'neighbor')
+        #Check that treat and pscore are not empty
+        matches = algorithm.match(self.treated, self.pscore)
+        return matches
         
 
 class MahalanobisMatching(object):
