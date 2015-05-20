@@ -27,7 +27,7 @@ class MatchClass(unittest.TestCase):
         match = PSM.Match()
         self.assertEqual(match.match_type, 'neighbor')
 
-    def test_set1_idlist_is_same_length_as_n(self):
+    def test_set1_idlist_is_same_length_as_data(self):
         testdata = DATASET1.sort(columns="_id", )
         match = PSM.Match()
         id_list = match.match(testdata["Treated"], testdata["_pscore"])
@@ -79,14 +79,14 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         names = dataset.keys()[key_range]
         design_matrix = dataset[names]
         design_matrix['Intercept'] = 1
-        return (treated, names, design_matrix)
-    
+        return (treated, design_matrix)
+
     def test_psm_can_initialize(self):
         psm = PSM.PropensityScoreMatching()
         self.assertEqual(psm.model, 'logit')
 
     def test_set1_pscores_should_equal_data_pscores(self):
-        treated, names, design_matrix = self.load_data(DATASET1, [1])        
+        treated, design_matrix = self.load_data(DATASET1, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
@@ -95,7 +95,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         self.assertAlmostEqual(mean_diff, 0)
 
     def test_set2_pscores_should_equal_data_pscores(self):
-        treated, names, design_matrix = self.load_data(DATASET2, [1])
+        treated, design_matrix = self.load_data(DATASET2, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
@@ -104,7 +104,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         self.assertAlmostEqual(mean_diff, 0)
 
     def test_set3_pscores_should_equal_data_pscores(self):
-        treated, names, design_matrix = self.load_data(DATASET3, [1])
+        treated, design_matrix = self.load_data(DATASET3, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
@@ -112,16 +112,51 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
         self.assertAlmostEqual(mean_diff, 0)
 
-#    def test_set1_matches_should_equal_actual_matches:
-#        treated = DATASET1['Treated']
-#        names = DATASET1.keys()[1:2]
-#        design_matrix = DATASET1[names]
-#        design_matrix['Intercept'] = 1
-#        psm = PSM.PropensityScoreMatching()
-#        psm.fit(treated, design_matrix)
-#        
-        
-# 
+    def test_set1_matches_should_equal_actual_matches(self):
+        treated, design_matrix = self.load_data(DATASET1, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+
+        id_list = psm.match()
+        test_list, true_list = DATASET1["_id"][id_list], DATASET1["_n1"]
+        #Raise assertionError if id_list cannot match the order if id and n1
+        np.testing.assert_array_equal(test_list, true_list)
+
+            #Explicitly test matching without nan values
+        test_list = test_list[np.isfinite(test_list)]
+        true_list = true_list[np.isfinite(true_list)]
+        self.assertTrue(np.array_equal(test_list, true_list))
+
+    def test_set2_matches_should_equal_actual_matches(self):
+        treated, design_matrix = self.load_data(DATASET2, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+
+        id_list = psm.match()
+        test_list, true_list = DATASET2["_id"][id_list], DATASET2["_n1"]
+        #Raise assertionError if id_list cannot match the order if id and n1
+        np.testing.assert_array_equal(test_list, true_list)
+
+        #Explicitly test matching without nan values
+        test_list = test_list[np.isfinite(test_list)]
+        true_list = true_list[np.isfinite(true_list)]
+        self.assertTrue(np.array_equal(test_list, true_list))
+
+    def test_set3_matches_should_equal_actual_matches(self):
+        treated, design_matrix = self.load_data(DATASET3, [1])
+        psm = PSM.PropensityScoreMatching()
+        psm.fit(treated, design_matrix)
+
+        id_list = psm.match()
+        test_list, true_list = DATASET3["_id"][id_list], DATASET3["_n1"]
+        #Raise assertionError if id_list cannot match the order if id and n1
+        np.testing.assert_array_equal(test_list, true_list)
+
+        #Explicitly test matching without nan values
+        test_list = test_list[np.isfinite(test_list)]
+        true_list = true_list[np.isfinite(true_list)]
+        self.assertTrue(np.array_equal(test_list, true_list))
+
 #     def test_set1_unmatched_treated_mean_should_equal_6349():
 #         names = DATASET2.keys()[1:2]        
 #         treated = DATASET1['Treated']
