@@ -73,15 +73,20 @@ class MatchClass(unittest.TestCase):
 class PropensityScoreMatchingClass(unittest.TestCase):
     #We don't define setUp because we will need to change parameters of the
     #psm instance
+    @staticmethod
+    def load_data(dataset, key_range):
+        treated = dataset['Treated']
+        names = dataset.keys()[key_range]
+        design_matrix = dataset[names]
+        design_matrix['Intercept'] = 1
+        return (treated, names, design_matrix)
+    
     def test_psm_can_initialize(self):
         psm = PSM.PropensityScoreMatching()
         self.assertEqual(psm.model, 'logit')
 
     def test_set1_pscores_should_equal_data_pscores(self):
-        treated = DATASET1['Treated']
-        names = DATASET1.keys()[1:2]
-        design_matrix = DATASET1[names]
-        design_matrix['Intercept'] = 1
+        treated, names, design_matrix = self.load_data(DATASET1, [1])        
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
@@ -90,10 +95,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         self.assertAlmostEqual(mean_diff, 0)
 
     def test_set2_pscores_should_equal_data_pscores(self):
-        treated = DATASET2['Treated']
-        names = DATASET2.keys()[1:2]
-        design_matrix = DATASET2[names]
-        design_matrix['Intercept'] = 1
+        treated, names, design_matrix = self.load_data(DATASET2, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
@@ -102,10 +104,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         self.assertAlmostEqual(mean_diff, 0)
 
     def test_set3_pscores_should_equal_data_pscores(self):
-        treated = DATASET3['Treated']
-        names = DATASET3.keys()[1:2]
-        design_matrix = DATASET3[names]
-        design_matrix['Intercept'] = 1
+        treated, names, design_matrix = self.load_data(DATASET3, [1])
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
@@ -113,6 +112,15 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         mean_diff = np.mean(np.abs(pscore_fit-pscore_actual))
         self.assertAlmostEqual(mean_diff, 0)
 
+#    def test_set1_matches_should_equal_actual_matches:
+#        treated = DATASET1['Treated']
+#        names = DATASET1.keys()[1:2]
+#        design_matrix = DATASET1[names]
+#        design_matrix['Intercept'] = 1
+#        psm = PSM.PropensityScoreMatching()
+#        psm.fit(treated, design_matrix)
+#        
+        
 # 
 #     def test_set1_unmatched_treated_mean_should_equal_6349():
 #         names = DATASET2.keys()[1:2]        
