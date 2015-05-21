@@ -8,28 +8,34 @@ Created on Mon May 18 15:09:03 2015
 import statsmodels.api as sm
 import pandas as pd
 import numpy as np
+import sklearn.neighbors as sk
+import scipy.spatial as ss
 
 class Match(object):
     """Perform matching algorithm on input data and return a list of indicies
     corresponding to matches."""
-    def __init__(self, match_type='neighbor'):
+    def __init__(self, match_type='neighbor', match_algorithm='brute'):
         self.match_type = match_type
+        self.match_algorithm = match_algorithm
 
-    def match(self, treated, covariates):
-        #Implement naive nearest neighbors for now
-        #if treated or covariates == null raise valueError
-        #if treated rows != covariate rows raise valueError
+    @staticmethod
+    def _extract_groups(treated, covariates):
         groups = treated == treated.unique()[1]
         n = len(groups)
         n1 = groups.sum()
         n2 = n-n1
         #if n1 > n2 raise valueError
         g1, g2 = covariates[groups == 1], covariates[groups == 0]
+        return (g1, g2, n)
 
+    @staticmethod
+    def _naive_match(g1, g2, n):
+        #if treated or covariates == null raise valueError
+        #if treated rows != covariate rows raise valueError
+        #Don't forget to add options for caliper and common support
         matches = pd.Series(np.empty(n))
         matches[:] = np.NAN
 
-        #naive nearest neighbor for now
         for m in g1.index:
             dist = abs(g1[m]-g2) # Note this returns a vector/series
             if dist.min() <= 100: #potential set caliper later
@@ -38,6 +44,33 @@ class Match(object):
             #g2 = g2.drop(matches[m]) replacement = false
 
         return matches
+
+    @staticmethod
+    def _kd_match(g1, g2, n):
+        #if treated or covariates == null raise valueError
+        #if treated rows != covariate rows raise valueError
+        #Don't forget to add options for caliper and common support
+        tree = sk.KDTree([[x] for x in g2], leaf_size=1, metric='minkowski', p=2)
+
+        matches = pd.Series(np.empty(n))
+        matches[:] = np.NAN
+
+        for m in g1.index:
+            dist, ind = tree.query(g1[m], k=1, breadth_first=True)
+            matches[m] = g2.index[ind[0]][0]
+        return matches
+
+    def match(self, treated, covariates):
+        g1, g2, n = self._extract_groups(treated, covariates)
+        if self.match_algorithm == 'brute':
+            matches = self._naive_match(g1, g2, n)
+        elif self.match_algorithm == 'kdtree':
+            matches = self._kd_match(g1, g2, n)
+        else:
+            #Raise error
+            pass
+        return matches
+
 
 class PropensityScoreMatching(object):
     """Propensity Score Matching in Python."""
