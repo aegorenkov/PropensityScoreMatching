@@ -24,32 +24,25 @@ class Match(object):
         n = len(groups)
         n1 = groups.sum()
         n2 = n-n1
-        #if n1 > n2 raise valueError
         g1, g2 = covariates[groups == 1], covariates[groups == 0]
         return (g1, g2, n)
 
     @staticmethod
     def _naive_match(g1, g2, n):
-        #if treated or covariates == null raise valueError
-        #if treated rows != covariate rows raise valueError
-        #Don't forget to add options for caliper and common support
         matches = pd.Series(np.empty(n))
         matches[:] = np.NAN
 
         for m in g1.index:
-            dist = abs(g1[m]-g2) # Note this returns a vector/series
-            if dist.min() <= 100: #potential set caliper later
+            # Note this returns a vector/series
+            dist = abs(g1[m]-g2)
+            #potential set caliper later
+            if dist.min() <= 100:
                 matches[m] = dist.argmin()
-                #Implicit search..speed up with Data Structure (kd..maybe LSH)
-            #g2 = g2.drop(matches[m]) replacement = false
 
         return matches
 
     @staticmethod
     def _kd_match(g1, g2, n):
-        #if treated or covariates == null raise valueError
-        #if treated rows != covariate rows raise valueError
-        #Don't forget to add options for caliper and common support
         tree = sk.KDTree([[x] for x in g2], leaf_size=1, metric='minkowski', p=2)
 
         matches = pd.Series(np.empty(n))
@@ -67,7 +60,6 @@ class Match(object):
         elif self.match_algorithm == 'kdtree':
             matches = self._kd_match(g1, g2, n)
         else:
-            #Raise error
             pass
         return matches
 
@@ -123,7 +115,6 @@ class PropensityScoreMatching(object):
         #check for valid method
         if match_method == 'neighbor':
             algorithm = Match(match_type='neighbor')
-        #Check that treat and pscore are not empty
         self._matches = algorithm.match(self.treated, self.pscore)
 
     def get_matches(self):
