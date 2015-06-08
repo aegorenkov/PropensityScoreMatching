@@ -5,11 +5,12 @@ Created on Mon May 18 15:09:03 2015
 @author: Alexander
 """
 
-import statsmodels.api as sm
+#import statsmodels.api as sm
+from statsmodels.api import families
+from statsmodels.api import GLM
 import pandas as pd
 import numpy as np
 import sklearn.neighbors as sk
-import scipy.spatial as ss
 
 class Match(object):
     """Perform matching algorithm on input data and return a list of indicies
@@ -100,9 +101,9 @@ class PropensityScoreMatching(object):
 
     def fit(self, treated, design_matrix):
         """Run logit or probit and return propensity score column"""
-        link = sm.families.links.logit
-        family = sm.families.Binomial(link)
-        reg = sm.GLM(treated, design_matrix, family=family)
+        link = families.links.logit
+        family = families.Binomial(link)
+        reg = GLM(treated, design_matrix, family=family)
         fitted_reg = reg.fit()
         pscore = fitted_reg.fittedvalues
         self.treated = treated
