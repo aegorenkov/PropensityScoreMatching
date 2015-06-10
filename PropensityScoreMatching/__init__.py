@@ -5,7 +5,6 @@ Created on Mon May 18 15:09:03 2015
 @author: Alexander
 """
 
-#import statsmodels.api as sm
 from statsmodels.api import families
 from statsmodels.api import GLM
 import pandas as pd
@@ -73,31 +72,26 @@ class PropensityScoreMatching(object):
         self.treated = None
         self.design_matrix = None
         self.pscore = None
-        self._results = {
-            'ATT': None,
-            'unmatched_treated_mean': None,
-            'matched_treated_mean': None,
-            'unmatched_control_mean': None,
-            'matched_control_mean': None
-            }
+        self.att = None
+        self.unmatched_treated_mean = None
+        self.matched_treated_mean = None
+        self.unmatched_control_mean = None
+        self.matched_control_mean = None
 
     def results(self, outcome):
         treatment = self.treated == 1
         control = self.treated == 0
-        self._results['unmatched_treated_mean'] = np.mean(outcome[treatment])
-        self._results['unmatched_control_mean'] = np.mean(outcome[control])
 
         match_treatment = outcome[np.isfinite(self._matches)]
         match_control = outcome[self._matches]
         match_control = match_control[np.isfinite(match_control)]
-        self._results['matched_treated_mean'] = np.mean(match_treatment)
-        self._results['matched_control_mean'] = np.mean(match_control)
 
-        ATT = np.mean(np.subtract(match_treatment, match_control))
-        self._results['ATT'] = ATT
-
-    def get_results(self, query):
-        return self._results[query]
+        att = np.mean(np.subtract(match_treatment, match_control))
+        self.att = att
+        self.unmatched_treated_mean = np.mean(outcome[treatment])
+        self.unmatched_control_mean = np.mean(outcome[control])
+        self.matched_treated_mean = np.mean(match_treatment)
+        self.matched_control_mean = np.mean(match_control)
 
     def fit(self, treated, design_matrix):
         """Run logit or probit and return propensity score column"""

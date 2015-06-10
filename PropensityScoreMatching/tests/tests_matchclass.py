@@ -165,7 +165,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
-        res = psm.get_results('unmatched_treated_mean')
+        res = psm.unmatched_treated_mean
         self.assertAlmostEqual(res, 6349.1435, places=4)
 
     def test_set1_matched_treated_mean_should_equal_6349(self):
@@ -174,7 +174,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
-        res = psm.get_results('matched_treated_mean')
+        res = psm.matched_treated_mean
         self.assertAlmostEqual(res, 6349.1435, places=4)
 
     def test_set1_unmatched_control_mean_should_equal_4554(self):
@@ -183,7 +183,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
-        res = psm.get_results('unmatched_control_mean')
+        res = psm.unmatched_control_mean
         self.assertAlmostEqual(res, 4554.80112, places=4)
 
     def test_set1_matched_control_mean_should_equal_5341(self):
@@ -192,7 +192,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
-        res = psm.get_results('matched_control_mean')
+        res = psm.matched_control_mean
         self.assertAlmostEqual(res, 5341.43016, places=4)
 
     def test_set1_ATT_should_equal_1007(self):
@@ -201,7 +201,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
-        res = psm.get_results('ATT')
+        res = psm.att
         self.assertAlmostEqual(res, 1007.71335, places=4)
 
     def test_set2_unmatched_treated_mean_should_equal_6349(self):
@@ -210,7 +210,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
-        res = psm.get_results('unmatched_treated_mean')
+        res = psm.unmatched_treated_mean
         self.assertAlmostEqual(res, 6349.1435, places=4)
 
     def test_set2_matched_treated_mean_should_equal_6349(self):
@@ -219,7 +219,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
-        res = psm.get_results('matched_treated_mean')
+        res = psm.matched_treated_mean
         self.assertAlmostEqual(res, 6349.1435, places=4)
 
     def test_set2_unmatched_control_mean_should_equal_4554(self):
@@ -228,7 +228,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
-        res = psm.get_results('unmatched_control_mean')
+        res = psm.unmatched_control_mean
         self.assertAlmostEqual(res, 4554.80112, places=4)
 
     def test_set2_matched_control_mean_should_equal_3397(self):
@@ -237,7 +237,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
-        res = psm.get_results('matched_control_mean')
+        res = psm.matched_control_mean
         self.assertAlmostEqual(res, 3397.68807, places=4)
 
     def test_set2_ATT_should_equal_2951(self):
@@ -246,7 +246,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
-        res = psm.get_results('ATT')
+        res = psm.att
         self.assertAlmostEqual(res, 2951.45543, places=4)
 
     def test_set3_unmatched_treated_mean_should_equal_6349(self):
@@ -255,7 +255,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
-        res = psm.get_results('unmatched_treated_mean')
+        res = psm.unmatched_treated_mean
         self.assertAlmostEqual(res, 6349.1435, places=4)
 
     def test_set3_matched_treated_mean_should_equal_6349(self):
@@ -264,7 +264,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
-        res = psm.get_results('matched_treated_mean')
+        res = psm.matched_treated_mean
         self.assertAlmostEqual(res, 6349.1435, places=4)
 
     def test_set3_unmatched_control_mean_should_equal_4554(self):
@@ -273,7 +273,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
-        res = psm.get_results('unmatched_control_mean')
+        res = psm.unmatched_control_mean
         self.assertAlmostEqual(res, 4554.80112, places=4)
 
     def test_set3_matched_control_mean_should_equal_4148(self):
@@ -282,7 +282,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
-        res = psm.get_results('matched_control_mean')
+        res = psm.matched_control_mean
         self.assertAlmostEqual(res, 4148.65249, places=4)
 
     def test_set3_ATT_should_equal_2200(self):
@@ -291,7 +291,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
-        res = psm.get_results('ATT')
+        res = psm.att
         self.assertAlmostEqual(res, 2200.49101, places=4)
 
 class TestMahalanobisMatchingClass(unittest.TestCase):
