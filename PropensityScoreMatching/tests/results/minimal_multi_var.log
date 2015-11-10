@@ -1,0 +1,113 @@
+----------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\minimal_multi_var.log
+  log type:  text
+ opened on:  10 Nov 2015, 17:01:59
+
+. import delimited "nsw_all_minimal.csv", case(preserve) clear
+(10 vars, 10 obs)
+
+. export delimited using "nsw_all_minimal_pscoresimple.csv", replace
+file nsw_all_minimal_pscoresimple.csv saved
+
+. psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
+note: Black != 1 predicts failure perfectly
+      Black dropped and 1 obs not used
+
+note: Hispanic omitted because of collinearity
+note: Married omitted because of collinearity
+
+Logistic regression                               Number of obs   =          9
+                                                  LR chi2(3)      =       4.22
+                                                  Prob > chi2     =     0.2382
+Log likelihood = -4.0705415                       Pseudo R2       =     0.3416
+
+------------------------------------------------------------------------------
+     Treated |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         Age |   .1656105   .1489175     1.11   0.266    -.1262625    .4574835
+   Education |  -.1910432   1.342356    -0.14   0.887    -2.822013    2.439926
+       Black |          0  (omitted)
+    Hispanic |          0  (omitted)
+     Married |          0  (omitted)
+    Nodegree |  -1.790412   4.447845    -0.40   0.687    -10.50803    6.927204
+       _cons |  -1.385701   17.57202    -0.08   0.937    -35.82623    33.05483
+------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+        Variable     Sample |    Treated     Controls   Difference         S.E.   T-stat
+----------------------------+-----------------------------------------------------------
+            RE78  Unmatched | 4583.09607   5361.27324  -778.177173   5892.41387    -0.13
+                        ATT | 4583.09607   16267.2518  -11684.1557   11228.9762    -1.04
+----------------------------+-----------------------------------------------------------
+Note: S.E. does not take into account that the propensity score is estimated.
+
+           | psmatch2:
+ psmatch2: |   Common
+ Treatment |  support
+assignment | On suppor |     Total
+-----------+-----------+----------
+ Untreated |         5 |         5 
+   Treated |         4 |         4 
+-----------+-----------+----------
+     Total |         9 |         9 
+
+
+. pstest Age Education Black Hispanic Married Nodegree, summary both
+
+----------------------------------------------------------------------------------------
+                Unmatched |       Mean               %reduct |     t-test    |  V(T)/
+Variable          Matched | Treated Control    %bias  |bias| |    t    p>|t| |  V(C)
+--------------------------+----------------------------------+---------------+----------
+Age                    U  |     34     21.4    123.0         |   1.96  0.090 | 16.78*
+                       M  |     34     19.5    141.6   -15.1 |   2.06  0.086 |198.00*
+                          |                                  |               |
+Education              U  |   10.5      9.8     35.3         |   0.54  0.604 |  2.58
+                       M  |   10.5    11.25    -37.8    -7.1 |  -0.53  0.613 |  2.52
+                          |                                  |               |
+Black                  U  |      1        1        .         |      .      . |     .
+                       M  |      1        1        .       . |      .      . |     .
+                          |                                  |               |
+Hispanic               U  |      0        0        .         |      .      . |     .
+                       M  |      0        0        .       . |      .      . |     .
+                          |                                  |               |
+Married                U  |      0        0        .         |      .      . |     .
+                       M  |      0        0        .       . |      .      . |     .
+                          |                                  |               |
+Nodegree               U  |     .5       .8    -58.1         |  -0.88  0.407 |     .
+                       M  |     .5      .25     48.4    16.7 |   0.65  0.537 |     .
+                          |                                  |               |
+----------------------------------------------------------------------------------------
+* if variance ratio outside [0.06; 15.44] for U and [0.06; 15.44] for M
+
+-----------------------------------------------------------------------------------
+ Sample    | Ps R2   LR chi2   p>chi2   MeanBias   MedBias      B      R     %Var
+-----------+-----------------------------------------------------------------------
+ Unmatched | 0.342      4.23    0.238     72.1      58.1     135.8*   9.09*    50
+ Matched   | 1.000     11.09        .     75.9      48.4     154.8*  237.67*   50
+-----------------------------------------------------------------------------------
+* if B>25%, R outside [0.5; 2]
+
+. mhbounds RE78, gamma(1 (1) 5)
+
+Mantel-Haenszel (1959) bounds for variable RE78
+
+Gamma         Q_mh+     Q_mh-     p_mh+     p_mh-
+-------------------------------------------------
+    1              .         .         .         .  
+    2       -.433013         .   .667497         .  
+    3       -.433013         .   .667497         .  
+    4       -.433013  -.433013   .667497   .667497  
+    5       -.433013         .   .667497         .  
+
+Gamma : odds of differential assignment due to unobserved factors
+Q_mh+ : Mantel-Haenszel statistic (assumption: overestimation of treatment effect)
+Q_mh- : Mantel-Haenszel statistic (assumption: underestimation of treatment effect)
+p_mh+ : significance level (assumption: overestimation of treatment effect)
+p_mh- : significance level (assumption: underestimation of treatment effect)
+
+. log close
+      name:  <unnamed>
+       log:  M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\minimal_multi_var.log
+  log type:  text
+ closed on:  10 Nov 2015, 17:01:59
+----------------------------------------------------------------------------------------------------------------------------------

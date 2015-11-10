@@ -29,9 +29,9 @@ RE78: RE78 (earnings in 1978)
 
 Scripts: [prepare_psm_testdata.do]
 -This file contains the routine to generate the test data in STATA 13
--We generate 9 csv files. 3 csv files with randomly sorted versions of the 
-Dehejia and Wahha data, 3 csv files that run a simple PSM on each randomly 
-sorted file and 3 csv files that run a more extensive PSM.
+-We generate 12 csv files. 4 csv files with randomly sorted versions of the 
+Dehejia and Wahha data, 4 csv files that run a simple PSM on each randomly 
+sorted file and 4 csv files that run a more extensive PSM.
 
 DTA files: [nsw_control.data, nsw_treated.dta, nsw_all.dta]
 -These are intermediate STATA files to join the treatment and control data

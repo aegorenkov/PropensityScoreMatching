@@ -6,10 +6,10 @@
 *NOTE: psmatch2 required
 
 *set working directory here for portability
-cd M:\Blackman\psm
+cd M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\generate_test_files
 
 *Import Lalonde data as used by Dehejia and Wahha (treatment group)
-import delimited M:\Blackman\psm\nswre74_treated.txt, delimiter(whitespace, collapse) varnames(nonames) clear 
+import nswre74_treated.txt, delimiter(whitespace, collapse) varnames(nonames) clear 
 *Give names to variables
 drop v1
 rename v2 Treated
@@ -27,7 +27,7 @@ rename v11 RE78
 saveold "nsw_treated.dta", replace
 
 *Import Lalonde data as used by Dehejia and Wahha (control group)
-import delimited M:\Blackman\psm\nswre74_control.txt, delimiter(whitespace, collapse) varnames(nonames) clear 
+import delimited nswre74_control.txt, delimiter(whitespace, collapse) varnames(nonames) clear 
 *Give names to variables
 drop v1
 rename v2 Treated
