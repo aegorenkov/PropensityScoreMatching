@@ -79,6 +79,11 @@ class PropensityScoreMatching(object):
         self.matched_control_mean = None
 
     def results(self, outcome):
+        """
+        Recieve outcome variable and return Results object
+        :param outcome: A Pandas Series or NumPy array containing outcome values
+        :return: Results object
+        """
         treatment = self.treated == 1
         control = self.treated == 0
 
@@ -92,6 +97,7 @@ class PropensityScoreMatching(object):
         self.unmatched_control_mean = np.mean(outcome[control])
         self.matched_treated_mean = np.mean(match_treatment)
         self.matched_control_mean = np.mean(match_control)
+        return Results()
 
     def fit(self, treated, design_matrix):
         """Run logit or probit and return propensity score column"""
@@ -117,5 +123,12 @@ class PropensityScoreMatching(object):
 
 class MahalanobisMatching(object):
     """Mahalanobis matching in Python."""
+    def __init__(self):
+        pass
+
+class Results(object):
+    """
+    Class to hold matching results
+    """
     def __init__(self):
         pass
