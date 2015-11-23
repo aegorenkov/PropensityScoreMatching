@@ -6,10 +6,10 @@
 *NOTE: psmatch2 required
 
 *set working directory here for portability
-cd M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\generate_test_files
+cd M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results
 
 *Import Lalonde data as used by Dehejia and Wahha (treatment group)
-import nswre74_treated.txt, delimiter(whitespace, collapse) varnames(nonames) clear 
+import delimited nswre74_treated.txt, delimiter(whitespace, collapse) varnames(nonames) clear 
 *Give names to variables
 drop v1
 rename v2 Treated
@@ -53,6 +53,15 @@ saveold "nsw_all.dta", replace
 ***********************************************************************
 *Create randomly sorted datasets for testing propensity score matching*
 ***********************************************************************
+log using "all_results.log", replace
+
+use "nsw_all.dta", clear
+set seed 12345
+gen sortorder = runiform()
+sort sortorder
+drop sortorder
+keep if _n <= 10
+export delimited using "nsw_all_minimal.csv", replace
 
 use "nsw_all.dta", clear
 set seed 12345
@@ -77,6 +86,10 @@ export delimited using "nsw_all_random3.csv", replace
 
 
 *Export test data sets for simple propensity score regression
+import delimited "nsw_all_minimal.csv", case(preserve) clear
+psmatch2 Treated Age, outcome(RE78) logit
+export delimited using "nsw_all_minimal_pscoresimple.csv", replace
+
 import delimited "nsw_all_random1.csv", case(preserve) clear
 psmatch2 Treated Age, outcome(RE78) logit
 export delimited using "nsw_all_random1_pscoresimple.csv", replace
@@ -91,6 +104,10 @@ export delimited using "nsw_all_random3_pscoresimple.csv", replace
 
 
 *Export test data sets for extensive propensity score regression
+import delimited "nsw_all_minimal.csv", case(preserve) clear
+psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
+export delimited using "nsw_all_minimal_pscorefull.csv", replace
+
 import delimited "nsw_all_random1.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
 export delimited using "nsw_all_random1_pscorefull.csv", replace
@@ -102,3 +119,5 @@ export delimited using "nsw_all_random2_pscorefull.csv", replace
 import delimited "nsw_all_random3.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
 export delimited using "nsw_all_random3_pscorefull.csv", replace
+
+log close
