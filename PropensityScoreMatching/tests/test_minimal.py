@@ -73,8 +73,8 @@ class TestMinimalMulti(unittest.TestCase):
         self.psm.match()
         self.results = self.psm.results(self.outcome)
 
-    def psm_should_return_correct_ATT(self):
-        self.assertAlmostEquals(self.results.ATT, -11684.1557)
+    def test_psm_should_return_correct_ATT(self):
+        self.assertAlmostEquals(self.results.ATT, -11684.1557, 3)
 
     def test_psm_should_return_correct_unmatched_treated_mean(self):
         self.assertAlmostEquals(self.results.unmatched_treated_mean, 4583.09607, 3)
@@ -82,11 +82,11 @@ class TestMinimalMulti(unittest.TestCase):
     def test_psm_should_return_correct_unmatched_control_mean(self):
         self.assertAlmostEquals(self.results.unmatched_control_mean, 5596.33138, 3)
 
-    def psm_should_return_correct_matched_treated_mean(self):
-        self.fail(msg='Not Implemented')
+    def test_psm_should_return_correct_matched_treated_mean(self):
+        self.assertAlmostEquals(self.results.matched_treated_mean, 4583.09607, 3)
 
-    def psm_should_return_correct_matched_control_mean(self):
-        self.fail(msg='Not Implemented')
+    def test_psm_should_return_correct_matched_control_mean(self):
+        self.assertAlmostEquals(self.results.matched_control_mean, 16267.2518, 3)
 
     def psm_should_return_correct_unmatched_standard_error(self):
         self.fail(msg='Not Implemented')
