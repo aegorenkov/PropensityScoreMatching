@@ -5,12 +5,13 @@ import numpy as np
 import os
 
 LOCAL_DIR = os.path.dirname(__file__)
-FILEPATH = os.path.join('results', 'nsw_all_minimal.csv')
+
 
 
 class TestMinimalSingle(unittest.TestCase):
     def setUp(self):
-        self.data = pd.read_csv(FILEPATH)
+        filepath = os.path.join('results', 'nsw_all_minimal_pscoresimple.csv')
+        self.data = pd.read_csv(filepath)
         self.outcome = self.data[u'RE78']
         self.treated = self.data[u'Treated']
         self.design_vars = [u'Age']
@@ -20,7 +21,7 @@ class TestMinimalSingle(unittest.TestCase):
         self.psm.match()
         self.results = self.psm.results(self.outcome)
 
-    def test_psm_should_return_correct_ATT(self):
+    def psm_should_return_correct_ATT(self):
         self.assertAlmostEquals(self.results.ATT, 1197.28503)
 
     def test_results_outcome_values(self):
@@ -37,7 +38,7 @@ class TestMinimalSingle(unittest.TestCase):
     def test_psm_should_return_correct_matched_treated_mean(self):
         self.assertAlmostEquals(self.results.matched_treated_mean, 4583.09607, 3)
 
-    def test__should_return_correct_matched_control_mean(self):
+    def should_return_correct_matched_control_mean(self):
         self.assertAlmostEquals(self.results.matched_control_mean, 3385.81104, 3)
 
     def psm_should_return_correct_unmatched_standard_error(self):
@@ -61,23 +62,25 @@ class TestMinimalSingle(unittest.TestCase):
 
 class TestMinimalMulti(unittest.TestCase):
     def setUp(self):
-        self.data = pd.read_csv(FILEPATH)
+        filepath = os.path.join('results', 'nsw_all_minimal_pscorefull.csv')
+        self.data = pd.read_csv(filepath)
         self.outcome = self.data[u'RE78']
         self.treated = self.data[u'Treated']
         self.design_vars = [u'Age', u'Education', u'Black', u'Hispanic', u'Married', u'Nodegree']
         self.design_matrix = self.data[self.design_vars]
         self.psm = PSM.PropensityScoreMatching()
         self.psm.fit(self.treated, self.design_matrix)
+        self.psm.match()
         self.results = self.psm.results(self.outcome)
 
     def psm_should_return_correct_ATT(self):
         self.assertAlmostEquals(self.results.ATT, -11684.1557)
 
-    def psm_should_return_correct_unmatched_treated_mean(self):
-        self.fail(msg='Not Implemented')
+    def test_psm_should_return_correct_unmatched_treated_mean(self):
+        self.assertAlmostEquals(self.results.unmatched_treated_mean, 4583.09607, 3)
 
-    def psm_should_return_correct_unmatched_control_mean(self):
-        self.fail(msg='Not Implemented')
+    def test_psm_should_return_correct_unmatched_control_mean(self):
+        self.assertAlmostEquals(self.results.unmatched_control_mean, 5596.33138, 3)
 
     def psm_should_return_correct_matched_treated_mean(self):
         self.fail(msg='Not Implemented')

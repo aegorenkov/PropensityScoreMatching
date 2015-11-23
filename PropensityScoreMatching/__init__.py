@@ -86,13 +86,12 @@ class PropensityScoreMatching(object):
         :param outcome: A Pandas Series or NumPy array containing outcome values
         :return: Results object
         """
-        outcome = np.asarray(outcome).flatten()
-        treatment = np.asarray(self.treated) == 1
-        control = np.asarray(self.treated) == 0
-        matches = np.asarray(self._matches)
-        match_values = matches[np.isfinite(matches)]
 
-        outcome = np.asarray(outcome).flatten()
+        treatment = self.treated == 1
+        control = self.treated == 0
+        matches = self._matches
+        match_values = matches[matches.dropna()]
+
 
         treatment_index = np.isfinite(matches)
         control_index = self._matches[np.isfinite(matches)]
@@ -114,6 +113,7 @@ class PropensityScoreMatching(object):
         reg = GLM(treated, design_matrix, family=family)
         fitted_reg = reg.fit()
         pscore = fitted_reg.fittedvalues
+
         self.treated = treated
         self.design_matrix = design_matrix
         self.pscore = pscore
