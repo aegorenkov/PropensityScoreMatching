@@ -9,11 +9,12 @@ from statsmodels.api import families
 from statsmodels.api import GLM
 import pandas as pd
 import numpy as np
-import sklearn.neighbors as sk
+#import sklearn.neighbors as sk
 
 class Match(object):
     """Perform matching algorithm on input data and return a list of indicies
     corresponding to matches."""
+
     def __init__(self, match_type='neighbor', match_algorithm='brute'):
         self.match_type = match_type
         self.match_algorithm = match_algorithm
@@ -23,7 +24,7 @@ class Match(object):
         groups = treated == treated.unique()[1]
         n = len(groups)
         n1 = groups.sum()
-        n2 = n-n1
+        n2 = n - n1
         g1, g2 = covariates[groups == 1], covariates[groups == 0]
         return (g1, g2, n)
 
@@ -34,8 +35,8 @@ class Match(object):
 
         for m in g1.index:
             # Note this returns a vector/series
-            dist = abs(g1[m]-g2)
-            #potential set caliper later
+            dist = abs(g1[m] - g2)
+            # potential set caliper later
             if dist.min() <= 100:
                 matches[m] = dist.argmin()
 
@@ -66,6 +67,7 @@ class Match(object):
 
 class PropensityScoreMatching(object):
     """Propensity Score Matching in Python."""
+
     def __init__(self, model='logit'):
         self.model = model
         self._matches = None
@@ -84,12 +86,18 @@ class PropensityScoreMatching(object):
         :param outcome: A Pandas Series or NumPy array containing outcome values
         :return: Results object
         """
-        treatment = self.treated == 1
-        control = self.treated == 0
+        outcome = np.asarray(outcome).flatten()
+        treatment = np.asarray(self.treated) == 1
+        control = np.asarray(self.treated) == 0
+        matches = np.asarray(self._matches)
+        match_values = matches[np.isfinite(matches)]
 
-        match_treatment = outcome[np.isfinite(self._matches)]
-        match_control = outcome[self._matches]
-        match_control = match_control[np.isfinite(match_control)]
+        outcome = np.asarray(outcome).flatten()
+
+        treatment_index = np.isfinite(matches)
+        control_index = self._matches[np.isfinite(matches)]
+        match_treatment = outcome[treatment_index]
+        match_control = outcome[control_index]
 
         att = np.mean(np.subtract(match_treatment, match_control))
         self.att = att
@@ -97,7 +105,7 @@ class PropensityScoreMatching(object):
         self.unmatched_control_mean = np.mean(outcome[control])
         self.matched_treated_mean = np.mean(match_treatment)
         self.matched_control_mean = np.mean(match_control)
-        return Results()
+        return Results(outcome=outcome, treated=treatment, matches=self._matches)
 
     def fit(self, treated, design_matrix):
         """Run logit or probit and return propensity score column"""
@@ -113,7 +121,7 @@ class PropensityScoreMatching(object):
     def match(self, match_method='neighbor'):
         """Take fitted propensity scores and match between treatment and
         control groups"""
-        #check for valid method
+        # check for valid method
         if match_method == 'neighbor':
             algorithm = Match(match_type='neighbor')
         self._matches = algorithm.match(self.treated, self.pscore)
@@ -121,14 +129,74 @@ class PropensityScoreMatching(object):
     def get_matches(self):
         return self._matches
 
+
 class MahalanobisMatching(object):
     """Mahalanobis matching in Python."""
+
     def __init__(self):
         pass
+
 
 class Results(object):
     """
     Class to hold matching results
     """
-    def __init__(self):
-        pass
+
+    def __init__(self, outcome, treated, matches):
+        self.outcome = np.asarray(outcome)
+        self.treated = np.asarray(treated)
+        self.matches = np.asarray(matches)
+
+    @property
+    def ATT(self):
+        """
+        Computes the Average Treatment Effect on the Treated
+
+        Expressed as: E[Y_{1i} - Y_{0i} | D_{i} = 1]
+        Where Y is an outcome variable,
+        Y_{1i} and Y_{0i} are values in the treatment and control group,
+        and D is dummy of whether treatment was applied
+        """
+        matches = self.matches
+        treatment_index = np.isfinite(matches)
+        control_index = np.asarray(self.matches[np.isfinite(matches)], dtype=np.int32)
+
+        match_treatment = self.outcome[treatment_index]
+        match_control = self.outcome[control_index]
+
+        return np.mean(np.subtract(match_treatment, match_control))
+
+    @property
+    def unmatched_treated_mean(self):
+        """
+        Calculates the mean of the outcome variable for observation that
+        are in the treatment group
+        """
+        return np.mean(self.outcome[self.treated==1])
+
+    @property
+    def unmatched_control_mean(self):
+        """
+        Calculates the mean of the outcome variable for observation that
+        are not in the treatment group
+        """
+        return np.mean(self.outcome[self.treated==0])
+
+    @property
+    def matched_treated_mean(self):
+        """
+        Calculates the mean of the outcome variable for treated observations
+        that also have a match
+        """
+        has_match = np.isfinite(self.matches)
+        return np.mean(self.outcome[has_match])
+
+    @property
+    def matched_control_mean(self):
+        """
+        Calculates the mean of the outcome variable for matched observations
+        from the control group
+        """
+        has_match = np.isfinite(self.matches)
+        match_index = np.asarray(self.matches[has_match], dtype=np.int32)
+        return np.mean(self.outcome[match_index])
