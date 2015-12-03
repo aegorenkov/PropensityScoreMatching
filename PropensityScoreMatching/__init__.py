@@ -8,6 +8,7 @@ Created on Mon May 18 15:09:03 2015
 from statsmodels.api import families
 from statsmodels.api import GLM
 from statsmodels.tools.tools import add_constant
+from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 import numpy as np
 
@@ -220,12 +221,17 @@ class Results(object):
         """
         Calculates standard error of naive treatment effect
         """
-        res = fit_reg(self.outcome, self.treated)
-        return res.bse[1]
+        #res = fit_reg(self.outcome, self.treated)
+        #return res.bse[1]
+        return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_t_statistic)
     
     @property
     def unmatched_t_statistic(self):
         """
         Calculate the t-statistics of the unmatched standard error
         """
-        return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
+        #return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
+        treated = self.outcome[self.treated]
+        controlled = self.outcome[~self.treated]
+        tstat = ttest_ind(treated, controlled)[0]
+        return tstat
