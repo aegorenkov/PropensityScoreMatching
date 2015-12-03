@@ -87,11 +87,11 @@ class TestMinimalAgeEducation(unittest.TestCase):
     def test_psm_should_return_correct_matched_control_mean(self):
         self.assertAlmostEquals(self.results.matched_control_mean, 5676.13629, 3)
 
-    def psm_should_return_correct_unmatched_standard_error(self):
-        self.assertAlmostEquals(self.results.unmatched_standard_error, 5892.41387, 3)
+    def test_psm_should_return_correct_unmatched_standard_error(self):
+        self.assertAlmostEquals(self.results.unmatched_standard_error, 5311.91113, 3)
 
-    def psm_should_return_correct_unmatched_t_statistic(self):
-        self.fail(msg='Not Implemented')
+    def test_psm_should_return_correct_unmatched_t_statistic(self):
+        self.assertAlmostEqual(self.results.unmatched_t_statistic, -0.19, 2)
 
     def psm_should_return_correct_unmatched_standard_error(self):
         self.fail(msg='Not Implemented')

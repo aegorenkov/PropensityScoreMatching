@@ -220,7 +220,12 @@ class Results(object):
         """
         Calculates standard error of naive treatment effect
         """
-        #assert False, str([self.outcome, self.treated])
         res = fit_reg(self.outcome, self.treated)
-
-        return res.bse[0]
+        return res.bse[1]
+    
+    @property
+    def unmatched_t_statistic(self):
+        """
+        Calculate the t-statistics of the unmatched standard error
+        """
+        return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
