@@ -103,6 +103,11 @@ psmatch2 Treated Age, outcome(RE78) logit
 export delimited using "nsw_all_random3_pscoresimple.csv", replace
 
 
+import delimited "nsw_all_minimal.csv", case(preserve) clear
+psmatch2 Treated Age Education, outcome(RE78) logit
+export delimited using "nsw_all_minimal_pscore_age_education.csv", replace
+
+
 *Export test data sets for extensive propensity score regression
 import delimited "nsw_all_minimal.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
@@ -119,5 +124,6 @@ export delimited using "nsw_all_random2_pscorefull.csv", replace
 import delimited "nsw_all_random3.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
 export delimited using "nsw_all_random3_pscorefull.csv", replace
+
 
 log close

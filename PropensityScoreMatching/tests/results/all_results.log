@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\all_results.log
   log type:  text
- opened on:  23 Nov 2015, 15:20:45
+ opened on:   3 Dec 2015, 17:54:20
 
 . 
 . use "nsw_all.dta", clear
@@ -232,6 +232,48 @@ file nsw_all_random3_pscoresimple.csv saved
 
 . 
 . 
+. import delimited "nsw_all_minimal.csv", case(preserve) clear
+(10 vars, 10 obs)
+
+. psmatch2 Treated Age Education, outcome(RE78) logit
+
+Logistic regression                               Number of obs   =         10
+                                                  LR chi2(2)      =       3.58
+                                                  Prob > chi2     =     0.1671
+Log likelihood =  -4.940793                       Pseudo R2       =     0.2659
+
+------------------------------------------------------------------------------
+     Treated |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         Age |   .1487288   .1074076     1.38   0.166    -.0617863    .3592439
+   Education |   .1676756   .5175116     0.32   0.746    -.8466284     1.18198
+       _cons |  -6.102286    6.17208    -0.99   0.323    -18.19934    5.994769
+------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+        Variable     Sample |    Treated     Controls   Difference         S.E.   T-stat
+----------------------------+-----------------------------------------------------------
+            RE78  Unmatched | 4583.09607   5596.33138  -1013.23531   5311.91113    -0.19
+                        ATT | 4583.09607   5676.13629  -1093.04022   5009.74651    -0.22
+----------------------------+-----------------------------------------------------------
+Note: S.E. does not take into account that the propensity score is estimated.
+
+           | psmatch2:
+ psmatch2: |   Common
+ Treatment |  support
+assignment | On suppor |     Total
+-----------+-----------+----------
+ Untreated |         6 |         6 
+   Treated |         4 |         4 
+-----------+-----------+----------
+     Total |        10 |        10 
+
+
+. export delimited using "nsw_all_minimal_pscore_age_education.csv", replace
+(note: file nsw_all_minimal_pscore_age_education.csv not found)
+file nsw_all_minimal_pscore_age_education.csv saved
+
+. 
+. 
 . *Export test data sets for extensive propensity score regression
 . import delimited "nsw_all_minimal.csv", case(preserve) clear
 (10 vars, 10 obs)
@@ -423,9 +465,10 @@ assignment | On suppor |     Total
 file nsw_all_random3_pscorefull.csv saved
 
 . 
+. 
 . log close
       name:  <unnamed>
        log:  M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\all_results.log
   log type:  text
- closed on:  23 Nov 2015, 15:20:46
+ closed on:   3 Dec 2015, 17:54:22
 ----------------------------------------------------------------------------------------------------------------------------------
