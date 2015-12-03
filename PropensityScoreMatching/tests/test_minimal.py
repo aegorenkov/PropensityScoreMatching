@@ -7,7 +7,6 @@ import os
 LOCAL_DIR = os.path.dirname(__file__)
 
 
-
 class TestMinimalSingle(unittest.TestCase):
     def setUp(self):
         filepath = os.path.join('results', 'nsw_all_minimal_pscoresimple.csv')
@@ -88,8 +87,8 @@ class TestMinimalMulti(unittest.TestCase):
     def test_psm_should_return_correct_matched_control_mean(self):
         self.assertAlmostEquals(self.results.matched_control_mean, 16267.2518, 3)
 
-    def psm_should_return_correct_unmatched_standard_error(self):
-        self.fail(msg='Not Implemented')
+    def test_psm_should_return_correct_unmatched_standard_error(self):
+        self.assertAlmostEquals(self.results.unmatched_standard_error, 5892.41387, 3)
 
     def psm_should_return_correct_unmatched_t_statistic(self):
         self.fail(msg='Not Implemented')
@@ -105,3 +104,12 @@ class TestMinimalMulti(unittest.TestCase):
 
     def psm_should_return_correct_observations_off_support(self):
         self.fail(msg='Not Implemented')
+
+
+class TestFitReg(unittest.TestCase):
+    def test_fit_reg_should_solve(self):
+        covariate = [[2389.67900],[17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000], [20893.10900],
+                     [0.00000], [0.00000]]
+        treated = [False, True, True, False, False, False, True, False, True, False]
+        treated = [[0], [1], [1], [0], [0], [0], [1], [0], [1], [0]]
+        res = PSM.fit_reg(covariate, treated)

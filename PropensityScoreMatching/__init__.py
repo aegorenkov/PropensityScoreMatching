@@ -7,9 +7,22 @@ Created on Mon May 18 15:09:03 2015
 
 from statsmodels.api import families
 from statsmodels.api import GLM
+from statsmodels.tools.tools import add_constant
 import pandas as pd
 import numpy as np
-#import sklearn.neighbors as sk
+
+
+# import sklearn.neighbors as sk
+
+def fit_reg(covariate, treated, weights=pd.Series()):
+    treated = add_constant(treated)
+    if not weights.any():
+        reg = GLM(covariate, treated)
+    else:
+        reg = GLM(covariate, treated)
+    res = reg.fit()
+    return res
+
 
 class Match(object):
     """Perform matching algorithm on input data and return a list of indicies
@@ -92,7 +105,6 @@ class PropensityScoreMatching(object):
         matches = self._matches
         match_values = matches[matches.dropna()]
 
-
         treatment_index = np.isfinite(matches)
         control_index = self._matches[np.isfinite(matches)]
         match_treatment = outcome[treatment_index]
@@ -143,9 +155,9 @@ class Results(object):
     """
 
     def __init__(self, outcome, treated, matches):
-        self.outcome = np.asarray(outcome)
-        self.treated = np.asarray(treated)
-        self.matches = np.asarray(matches)
+        self.outcome = outcome
+        self.treated = treated
+        self.matches = matches
 
     @property
     def ATT(self):
@@ -172,7 +184,7 @@ class Results(object):
         Calculates the mean of the outcome variable for observation that
         are in the treatment group
         """
-        return np.mean(self.outcome[self.treated==1])
+        return np.mean(self.outcome[self.treated == 1])
 
     @property
     def unmatched_control_mean(self):
@@ -180,7 +192,7 @@ class Results(object):
         Calculates the mean of the outcome variable for observation that
         are not in the treatment group
         """
-        return np.mean(self.outcome[self.treated==0])
+        return np.mean(self.outcome[self.treated == 0])
 
     @property
     def matched_treated_mean(self):
@@ -200,3 +212,13 @@ class Results(object):
         has_match = np.isfinite(self.matches)
         match_index = np.asarray(self.matches[has_match], dtype=np.int32)
         return np.mean(self.outcome[match_index])
+
+    @property
+    def unmatched_standard_error(self):
+        """
+        Calculates standard error of naive treatment effect
+        """
+        #assert False, str([self.outcome, self.treated])
+        res = fit_reg(self.outcome, self.treated)
+
+        return res.bse[0]
