@@ -122,10 +122,12 @@ class PropensityScoreMatching(object):
         """Run logit or probit and return propensity score column"""
         link = families.links.logit
         family = families.Binomial(link)
+        design_matrix = add_constant(design_matrix)
         reg = GLM(treated, design_matrix, family=family)
         fitted_reg = reg.fit()
         pscore = fitted_reg.fittedvalues
 
+        self.fitted_reg= fitted_reg
         self.treated = treated
         self.design_matrix = design_matrix
         self.pscore = pscore
