@@ -88,41 +88,50 @@ export delimited using "nsw_all_random3.csv", replace
 *Export test data sets for simple propensity score regression
 import delimited "nsw_all_minimal.csv", case(preserve) clear
 psmatch2 Treated Age, outcome(RE78) logit
+pstest Age, summary both
 export delimited using "nsw_all_minimal_pscoresimple.csv", replace
 
 import delimited "nsw_all_random1.csv", case(preserve) clear
 psmatch2 Treated Age, outcome(RE78) logit
+pstest Age, summary both
 export delimited using "nsw_all_random1_pscoresimple.csv", replace
 
 import delimited "nsw_all_random2.csv", case(preserve) clear
 psmatch2 Treated Age, outcome(RE78) logit
+pstest Age, summary both
 export delimited using "nsw_all_random2_pscoresimple.csv", replace
 
 import delimited "nsw_all_random3.csv", case(preserve) clear
 psmatch2 Treated Age, outcome(RE78) logit
+pstest Age, summary both
 export delimited using "nsw_all_random3_pscoresimple.csv", replace
 
 
 import delimited "nsw_all_minimal.csv", case(preserve) clear
 psmatch2 Treated Age Education, outcome(RE78) logit
+pstest Age Education, summary both
 export delimited using "nsw_all_minimal_pscore_age_education.csv", replace
 
 
 *Export test data sets for extensive propensity score regression
 import delimited "nsw_all_minimal.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
+pstest Age Education Black Hispanic Married Nodegree, summary both
 export delimited using "nsw_all_minimal_pscorefull.csv", replace
 
 import delimited "nsw_all_random1.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
+pstest Age Education Black Hispanic Married Nodegree, summary both
 export delimited using "nsw_all_random1_pscorefull.csv", replace
 
 import delimited "nsw_all_random2.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
+pstest Age Education Black Hispanic Married Nodegree, summary both
 export delimited using "nsw_all_random2_pscorefull.csv", replace
 
 import delimited "nsw_all_random3.csv", case(preserve) clear
 psmatch2 Treated Age Education Black Hispanic Married Nodegree, outcome(RE78) logit
+pstest Age Education Black Hispanic Married Nodegree, summary both
 export delimited using "nsw_all_random3_pscorefull.csv", replace
 
 
