@@ -118,7 +118,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
 
-        id_list = psm.get_matches()
+        id_list = psm.matches
         test_list, true_list = DATASET1["_id"][id_list], DATASET1["_n1"]
         #Raise assertionError if id_list cannot match the order if id and n1
         np.testing.assert_array_equal(test_list, true_list)
@@ -134,7 +134,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm.fit(treated, design_matrix)
         psm.match()
 
-        id_list = psm.get_matches()
+        id_list = psm.matches
         test_list, true_list = DATASET2["_id"][id_list], DATASET2["_n1"]
         #Raise assertionError if id_list cannot match the order if id and n1
         np.testing.assert_array_equal(test_list, true_list)
@@ -149,7 +149,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         psm = PSM.PropensityScoreMatching()
         psm.fit(treated, design_matrix)
         psm.match()
-        id_list = psm.get_matches()
+        id_list = psm.matches
         test_list, true_list = DATASET3["_id"][id_list], DATASET3["_n1"]
         #Raise assertionError if id_list cannot match the order if id and n1
         np.testing.assert_array_equal(test_list, true_list)

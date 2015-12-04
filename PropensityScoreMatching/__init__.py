@@ -4,6 +4,7 @@ Created on Mon May 18 15:09:03 2015
 
 @author: Alexander
 """
+from _ast import Dict
 
 from statsmodels.api import families
 from statsmodels.api import GLM
@@ -103,21 +104,6 @@ class PropensityScoreMatching(object):
         """
 
         treatment = self.treated == 1
-        control = self.treated == 0
-        matches = self._matches
-        match_values = matches[matches.dropna()]
-
-        treatment_index = np.isfinite(matches)
-        control_index = self._matches[np.isfinite(matches)]
-        match_treatment = outcome[treatment_index]
-        match_control = outcome[control_index]
-
-        att = np.mean(np.subtract(match_treatment, match_control))
-        self.att = att
-        self.unmatched_treated_mean = np.mean(outcome[treatment])
-        self.unmatched_control_mean = np.mean(outcome[control])
-        self.matched_treated_mean = np.mean(match_treatment)
-        self.matched_control_mean = np.mean(match_control)
         return Results(outcome=outcome, treated=treatment, matches=self._matches)
 
     def fit(self, treated, design_matrix):
@@ -142,7 +128,8 @@ class PropensityScoreMatching(object):
             algorithm = Match(match_type='neighbor')
         self._matches = algorithm.match(self.treated, self.pscore)
 
-    def get_matches(self):
+    @property
+    def matches(self):
         return self._matches
 
 
@@ -301,3 +288,6 @@ class Results(object):
         Calculate the t-statistics of the matched standard error
         """
         return (self.matched_treated_mean - self.matched_control_mean) / float(self.matched_standard_error)
+
+
+#class BalanceStatistics(Dict):

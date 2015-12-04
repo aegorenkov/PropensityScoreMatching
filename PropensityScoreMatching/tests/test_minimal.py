@@ -105,6 +105,22 @@ class TestMinimalAgeEducation(unittest.TestCase):
     def psm_should_return_correct_observations_off_support(self):
         self.fail(msg='Not Implemented')
 
+class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
+    def setUp(self):
+        filepath = os.path.join('results', 'nsw_all_minimal_pscore_age_education.csv')
+        self.data = pd.read_csv(filepath)
+        self.outcome = self.data[u'RE78']
+        self.treated = self.data[u'Treated']
+        self.design_vars = [u'Age', u'Education']
+        self.design_matrix = self.data[self.design_vars]
+        self.psm = PSM.PropensityScoreMatching()
+        self.psm.fit(self.treated, self.design_matrix)
+        self.psm.match()
+        self.balance_statistics = PSM.BalanceStatistics(self.psm)
+
+    def unmtched_treated_means_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics['Age'], 34, 2)
+        self.assertAlmostEqual(self.balance_statistics['Education'], 10.5, 2)
 
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
