@@ -81,11 +81,11 @@ class Match(object):
         return matches
 
 
-class PropensityScoreMatching(object):
+class StatisticalMatching(object):
     """Propensity Score Matching in Python."""
 
-    def __init__(self, model='logit'):
-        self.model = model
+    def __init__(self, method='propensity_score'):
+        self.method = method
         self._matches = None
         self.treated = None
         self.design_matrix = None
@@ -123,9 +123,10 @@ class PropensityScoreMatching(object):
         """Take fitted propensity scores and match between treatment and
         control groups"""
         # check for valid method
-        if match_method == 'neighbor':
-            algorithm = Match(match_type='neighbor')
-        self._matches = algorithm.match(self.treated, self.pscore)
+        if self.method == 'propensity_score':
+            if match_method == 'neighbor':
+                algorithm = Match(match_type='neighbor')
+            self._matches = algorithm.match(self.treated, self.pscore)
 
     @property
     def matches(self):
