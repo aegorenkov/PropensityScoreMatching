@@ -103,8 +103,7 @@ class PropensityScoreMatching(object):
         :return: Results object
         """
 
-        treatment = self.treated == 1
-        return Results(outcome=outcome, treated=treatment, matches=self._matches)
+        return Results(outcome=outcome, psm=self)
 
     def fit(self, treated, design_matrix):
         """Run logit or probit and return propensity score column"""
@@ -116,7 +115,7 @@ class PropensityScoreMatching(object):
         pscore = fitted_reg.fittedvalues
 
         self.fitted_reg = fitted_reg
-        self.treated = treated
+        self.treated = treated.astype('bool')
         self.design_matrix = design_matrix
         self.pscore = pscore
 
@@ -133,22 +132,15 @@ class PropensityScoreMatching(object):
         return self._matches
 
 
-class MahalanobisMatching(object):
-    """Mahalanobis matching in Python."""
-
-    def __init__(self):
-        pass
-
-
 class Results(object):
     """
     Class to hold matching results
     """
 
-    def __init__(self, outcome, treated, matches):
+    def __init__(self, outcome, psm):
         self.outcome = outcome
-        self.treated = treated
-        self.matches = matches
+        self.treated = psm.treated
+        self.matches = psm.matches
 
     @property
     def ATT(self):
@@ -263,14 +255,14 @@ class Results(object):
             :param outcomes: Outcome values related to a treatment or control group
             :return: Returns sample variance as a float
             """
-            #Set degree of freedom as n - 1
+            # Set degree of freedom as n - 1
             return np.var(outcomes, ddof=1)
 
         treatment_outcomes = self.outcome[self.treated]
 
         has_match = np.isfinite(self.matches)
         match_index = np.asarray(self.matches[has_match], dtype=np.int32)
-        unique_matches = np.unique(match_index) # don't repeat weighted obs
+        unique_matches = np.unique(match_index)  # don't repeat weighted obs
         control_outcomes = self.outcome[match_index[unique_matches]]
 
         treatment_variance = sample_variance(treatment_outcomes)
@@ -290,4 +282,4 @@ class Results(object):
         return (self.matched_treated_mean - self.matched_control_mean) / float(self.matched_standard_error)
 
 
-#class BalanceStatistics(Dict):
+        # class BalanceStatistics(Dict):
