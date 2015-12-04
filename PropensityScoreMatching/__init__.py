@@ -11,6 +11,7 @@ from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 import numpy as np
+from collections import defaultdict
 
 
 # import sklearn.neighbors as sk
@@ -128,7 +129,7 @@ class PropensityScoreMatching(object):
         fitted_reg = reg.fit()
         pscore = fitted_reg.fittedvalues
 
-        self.fitted_reg= fitted_reg
+        self.fitted_reg = fitted_reg
         self.treated = treated
         self.design_matrix = design_matrix
         self.pscore = pscore
@@ -221,17 +222,82 @@ class Results(object):
         """
         Calculates standard error of naive treatment effect
         """
-        #res = fit_reg(self.outcome, self.treated)
-        #return res.bse[1]
+        # res = fit_reg(self.outcome, self.treated)
+        # return res.bse[1]
         return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_t_statistic)
-    
+
     @property
     def unmatched_t_statistic(self):
         """
         Calculate the t-statistics of the unmatched standard error
         """
-        #return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
+        # return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
         treated = self.outcome[self.treated]
         controlled = self.outcome[~self.treated]
         tstat = ttest_ind(treated, controlled)[0]
         return tstat
+
+    @property
+    def matched_standard_error(self):
+        """
+        Calculates standard error of matched treatment effect
+        """
+
+        def get_average_variance(s1, s2, n1, n2, sum_squared_weights):
+            """
+            Calculates the average weighted variance of the treatment and control sample
+
+            :param s1: Treatement group variance
+            :param s2: Control group variance
+            :param n1: Sample size of treatment group
+            :param n2: Sample size of control group
+            :param sum_squared_weights: Sum squares of control observation wieghts
+            :return: Returns average variance as a float
+            """
+            # Same as s1/float(n2) + (s2*float(sum_squared_weights))/(float(n2)**2)
+            return 1 / float(n1) * s1 + float(sum_squared_weights) / (float(n1) ** 2.0) * s2
+
+        def get_match_weights(matches):
+            """
+            Takes a list of match indicies and counts duplicates to determine weights
+            :param matches: Pandas or numpy array representing mathes
+            :return: Array of weights
+            """
+            weights = defaultdict(lambda: 0)
+            match_indicies = matches[np.isfinite(matches)]
+
+            for value in match_indicies:
+                weights[value] += 1
+            return np.asarray(weights.values())
+
+        def sample_variance(outcomes):
+            """
+            Find the sample variance of a treatment or control sample
+            :param outcomes: Outcome values related to a treatment or control group
+            :return: Returns sample variance as a float
+            """
+            #Set degree of freedom as n - 1
+            return np.var(outcomes, ddof=1)
+
+        treatment_outcomes = self.outcome[self.treated]
+
+        has_match = np.isfinite(self.matches)
+        match_index = np.asarray(self.matches[has_match], dtype=np.int32)
+        unique_matches = np.unique(match_index) # don't repeat weighted obs
+        control_outcomes = self.outcome[match_index[unique_matches]]
+
+        treatment_variance = sample_variance(treatment_outcomes)
+        control_variance = sample_variance(control_outcomes)
+
+        n1, n2 = len(treatment_outcomes), len(np.unique(match_index))
+        W = np.sum(get_match_weights(self.matches) ** 2)
+
+        average_variance = get_average_variance(treatment_variance, control_variance, n1, n2, W)
+        return np.sqrt(average_variance)
+
+    @property
+    def matched_t_statistic(self):
+        """
+        Calculate the t-statistics of the matched standard error
+        """
+        return (self.matched_treated_mean - self.matched_control_mean) / float(self.matched_standard_error)
