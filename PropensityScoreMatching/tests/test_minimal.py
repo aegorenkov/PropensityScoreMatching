@@ -15,10 +15,13 @@ class TestMinimalSingle(unittest.TestCase):
         self.treated = self.data[u'Treated']
         self.design_vars = [u'Age']
         self.design_matrix = self.data[self.design_vars]
-        self.psm = PSM.PropensityScoreMatching()
-        self.psm.fit(self.treated, self.design_matrix)
+        self.psm = PSM.StatisticalMatching()
+        self.psm.fit(self.treated, self.design_matrix, names=self.design_vars)
         self.psm.match()
         self.results = self.psm.results(self.outcome)
+
+    def test_psm_should_contain_column_names(self):
+        self.assertEqual(self.psm.names, [u'Age'])
 
     def psm_should_return_correct_ATT(self):
         self.assertAlmostEquals(self.results.ATT, 1197.28503)
@@ -67,10 +70,13 @@ class TestMinimalAgeEducation(unittest.TestCase):
         self.treated = self.data[u'Treated']
         self.design_vars = [u'Age', u'Education']
         self.design_matrix = self.data[self.design_vars]
-        self.psm = PSM.PropensityScoreMatching()
-        self.psm.fit(self.treated, self.design_matrix)
+        self.psm = PSM.StatisticalMatching()
+        self.psm.fit(self.treated, self.design_matrix, names=self.design_vars)
         self.psm.match()
         self.results = self.psm.results(self.outcome)
+
+    def test_psm_should_contain_column_names(self):
+        self.assertEqual(self.psm.names, [u'Age', u'Education'])
 
     def test_psm_should_return_correct_ATT(self):
         self.assertAlmostEquals(self.results.ATT, -1093.04022, 3)
@@ -105,6 +111,7 @@ class TestMinimalAgeEducation(unittest.TestCase):
     def psm_should_return_correct_observations_off_support(self):
         self.fail(msg='Not Implemented')
 
+
 class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
     def setUp(self):
         filepath = os.path.join('results', 'nsw_all_minimal_pscore_age_education.csv')
@@ -113,20 +120,24 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.treated = self.data[u'Treated']
         self.design_vars = [u'Age', u'Education']
         self.design_matrix = self.data[self.design_vars]
-        self.psm = PSM.PropensityScoreMatching()
-        self.psm.fit(self.treated, self.design_matrix)
+        self.psm = PSM.StatisticalMatching()
+        self.psm.fit(self.treated, self.design_matrix, names=self.design_vars)
         self.psm.match()
         self.balance_statistics = PSM.BalanceStatistics(self.psm)
 
-    def unmtched_treated_means_should_be_correct(self):
-        self.assertAlmostEqual(self.balance_statistics['Age'], 34, 2)
-        self.assertAlmostEqual(self.balance_statistics['Education'], 10.5, 2)
+    def test_unmatched_treated_means_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_treated_mean['Age'], 34, 2)
+        self.assertAlmostEqual(self.balance_statistics.unmatched_treated_mean['Education'], 10.5, 2)
+
+    def test_unmatched_controlled_means_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_control_mean['Age'], 22.5, 2)
+        self.assertAlmostEqual(self.balance_statistics.unmatched_control_mean['Education'], 10, 2)
 
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
-        covariate = [[2389.67900],[17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000], [20893.10900],
+        covariate = [[2389.67900], [17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000],
+                     [20893.10900],
                      [0.00000], [0.00000]]
         treated = [False, True, True, False, False, False, True, False, True, False]
         treated = [[0], [1], [1], [0], [0], [0], [1], [0], [1], [0]]
         res = PSM.fit_reg(covariate, treated)
-

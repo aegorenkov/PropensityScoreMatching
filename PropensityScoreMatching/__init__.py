@@ -12,7 +12,7 @@ from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 import numpy as np
-from collections import defaultdict
+from collections import defaultdict, Sequence
 
 
 # import sklearn.neighbors as sk
@@ -89,6 +89,7 @@ class StatisticalMatching(object):
         self._matches = None
         self.treated = None
         self.design_matrix = None
+        self.name = None
         self.pscore = None
         self.att = None
         self.unmatched_treated_mean = None
@@ -105,7 +106,17 @@ class StatisticalMatching(object):
 
         return Results(outcome=outcome, psm=self)
 
-    def fit(self, treated, design_matrix):
+    def _set_names(self, names):
+        if names:
+            return names
+        else:
+            try:
+                names = list(self.design_matrix.columns)
+            except AttributeError:
+                raise AttributeError('No column names provided and names cannot be inferred from data.')
+        return names
+
+    def fit(self, treated, design_matrix, names=[]):
         """Run logit or probit and return propensity score column"""
         link = families.links.logit
         family = families.Binomial(link)
@@ -117,6 +128,7 @@ class StatisticalMatching(object):
         self.fitted_reg = fitted_reg
         self.treated = treated.astype('bool')
         self.design_matrix = design_matrix
+        self.names = self._set_names(names)
         self.pscore = pscore
 
     def match(self, match_method='neighbor'):
@@ -283,4 +295,20 @@ class Results(object):
         return (self.matched_treated_mean - self.matched_control_mean) / float(self.matched_standard_error)
 
 
-        # class BalanceStatistics(Dict):
+class BalanceStatistics(pd.DataFrame):
+    def __init__(self, psm):
+        columns = ['unmatched_treated_mean', 'unmatched_control_mean']
+
+        data = {'unmatched_treated_mean': self._unmatched_treated_mean(psm),
+                'unmatched_control_mean': self._unmatched_control_mean(psm)}
+
+        super(BalanceStatistics, self).__init__(data, index=psm.names, columns=columns)
+        # columns should be
+        # unmatched_treated_mean, unmatched_controlled_mean, unmathced_bias, unmatched_t_test, unmatched_p_values
+        # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value
+
+    def _unmatched_treated_mean(self, psm):
+        return list(psm.design_matrix[psm.names][psm.treated].mean())
+
+    def _unmatched_control_mean(self, psm):
+        return list(psm.design_matrix[psm.names][~psm.treated].mean())

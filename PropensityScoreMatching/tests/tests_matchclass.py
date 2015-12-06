@@ -82,12 +82,12 @@ class PropensityScoreMatchingClass(unittest.TestCase):
         return (treated, design_matrix)
 
     def test_psm_can_initialize(self):
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         self.assertEqual(psm.model, 'logit')
 
     def test_set1_pscores_should_equal_data_pscores(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
         pscore_actual = DATASET1['_pscore']
@@ -96,7 +96,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_pscores_should_equal_data_pscores(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
         pscore_actual = DATASET2['_pscore']
@@ -105,7 +105,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_pscores_should_equal_data_pscores(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         pscore_fit = psm.pscore
         pscore_actual = DATASET3['_pscore']
@@ -114,7 +114,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_matches_should_equal_actual_matches(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
 
@@ -130,7 +130,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_matches_should_equal_actual_matches(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
 
@@ -146,7 +146,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_matches_should_equal_actual_matches(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         id_list = psm.matches
@@ -161,7 +161,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_unmatched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
@@ -170,7 +170,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_matched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
@@ -179,7 +179,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_unmatched_control_mean_should_equal_4554(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
@@ -188,7 +188,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_matched_control_mean_should_equal_5341(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
@@ -197,7 +197,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set1_ATT_should_equal_1007(self):
         treated, design_matrix = self.load_data(DATASET1, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET1['RE78'])
@@ -206,7 +206,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_unmatched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
@@ -215,7 +215,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_matched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
@@ -224,7 +224,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_unmatched_control_mean_should_equal_4554(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
@@ -233,7 +233,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_matched_control_mean_should_equal_3397(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
@@ -242,7 +242,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set2_ATT_should_equal_2951(self):
         treated, design_matrix = self.load_data(DATASET2, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET2['RE78'])
@@ -251,7 +251,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_unmatched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
@@ -260,7 +260,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_matched_treated_mean_should_equal_6349(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
@@ -269,7 +269,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_unmatched_control_mean_should_equal_4554(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
@@ -278,7 +278,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_matched_control_mean_should_equal_4148(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
@@ -287,7 +287,7 @@ class PropensityScoreMatchingClass(unittest.TestCase):
 
     def test_set3_ATT_should_equal_2200(self):
         treated, design_matrix = self.load_data(DATASET3, [1])
-        psm = PSM.PropensityScoreMatching()
+        psm = PSM.StatisticalMatching()
         psm.fit(treated, design_matrix)
         psm.match()
         psm.results(DATASET3['RE78'])
