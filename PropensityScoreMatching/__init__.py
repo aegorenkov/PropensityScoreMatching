@@ -296,27 +296,60 @@ class Results(object):
 
 
 class BalanceStatistics(pd.DataFrame):
-    def __init__(self, psm):
+    """
+    Represents balance statistics from a StatisticalMatching instance as a data frame
+    """
+
+    def __init__(self, statmatch):
+        """
+        Populate a pandas data frame and pass it forward as BalanceStatistics
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: BalanceStatistics instance
+        """
         # Could be replaced with an ordered dictionary
         columns = ['unmatched_treated_mean', 'unmatched_control_mean', 'unmatched_bias']
 
-        data = {'unmatched_treated_mean': self._unmatched_treated_mean(psm),
-                'unmatched_control_mean': self._unmatched_control_mean(psm),
-                'unmatched_bias': self._unmatched_bias(psm)}
+        data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
+                'unmatched_control_mean': self._unmatched_control_mean(statmatch),
+                'unmatched_bias': self._unmatched_bias(statmatch)}
 
-        super(BalanceStatistics, self).__init__(data, index=psm.names, columns=columns)
+        super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
         # unmatched_treated_mean, unmatched_controlled_mean, unmathced_bias, unmatched_t_test, unmatched_p_values
         # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value
 
-    def _unmatched_treated_mean(self, psm):
-        return np.array(psm.design_matrix[psm.names][psm.treated].mean())
+    def _unmatched_treated_mean(self, statmatch):
+        """
+        Compute the unmatched treated mean for every matching variable using vectorized operations
 
-    def _unmatched_control_mean(self, psm):
-        return np.array(psm.design_matrix[psm.names][~psm.treated].mean())
+        Expressed as: E[X_{i}| D_{i} = 1]
 
-    def _unmatched_bias(self, psm):
-        treated_variance = np.array(psm.design_matrix[psm.names][psm.treated].var())
-        control_variance = np.array(psm.design_matrix[psm.names][~psm.treated].var())
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing means for each matching variable
+        """
+        return np.array(statmatch.design_matrix[statmatch.names][statmatch.treated].mean())
+
+    def _unmatched_control_mean(self, statmatch):
+        """
+        Compute the unmatched control mean for every matching variable using vectorized operations
+
+        Expressed as: E[X_{i}| D_{i} = 0]
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing means for each matching variable
+        """
+        return np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated].mean())
+
+    def _unmatched_bias(self, statmatch):
+        """
+        Compute the unmatched bias for every matching variable using vectorized operations
+
+        Expressed as: 100 * (m1u - m0u) / sqrt((v1u + v0u) / 2)
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing normalized percent bias for each matching variable
+        """
+        treated_variance = np.array(statmatch.design_matrix[statmatch.names][statmatch.treated].var())
+        control_variance = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated].var())
         normal = np.sqrt((treated_variance + control_variance) / 2)
-        return 100 * (self._unmatched_treated_mean(psm) - self._unmatched_control_mean(psm)) / normal
+        return 100 * (self._unmatched_treated_mean(statmatch) - self._unmatched_control_mean(statmatch)) / normal
