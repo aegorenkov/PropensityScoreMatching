@@ -297,10 +297,12 @@ class Results(object):
 
 class BalanceStatistics(pd.DataFrame):
     def __init__(self, psm):
-        columns = ['unmatched_treated_mean', 'unmatched_control_mean']
+        # Could be replaced with an ordered dictionary
+        columns = ['unmatched_treated_mean', 'unmatched_control_mean', 'unmatched_bias']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(psm),
-                'unmatched_control_mean': self._unmatched_control_mean(psm)}
+                'unmatched_control_mean': self._unmatched_control_mean(psm),
+                'unmatched_bias': self._unmatched_bias(psm)}
 
         super(BalanceStatistics, self).__init__(data, index=psm.names, columns=columns)
         # columns should be
@@ -308,7 +310,13 @@ class BalanceStatistics(pd.DataFrame):
         # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value
 
     def _unmatched_treated_mean(self, psm):
-        return list(psm.design_matrix[psm.names][psm.treated].mean())
+        return np.array(psm.design_matrix[psm.names][psm.treated].mean())
 
     def _unmatched_control_mean(self, psm):
-        return list(psm.design_matrix[psm.names][~psm.treated].mean())
+        return np.array(psm.design_matrix[psm.names][~psm.treated].mean())
+
+    def _unmatched_bias(self, psm):
+        treated_variance = np.array(psm.design_matrix[psm.names][psm.treated].var())
+        control_variance = np.array(psm.design_matrix[psm.names][~psm.treated].var())
+        normal = np.sqrt((treated_variance + control_variance) / 2)
+        return 100 * (self._unmatched_treated_mean(psm) - self._unmatched_control_mean(psm)) / normal

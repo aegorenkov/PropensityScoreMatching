@@ -133,6 +133,10 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.assertAlmostEqual(self.balance_statistics.unmatched_control_mean['Age'], 22.5, 2)
         self.assertAlmostEqual(self.balance_statistics.unmatched_control_mean['Education'], 10, 2)
 
+    def test_unmatched_percent_bias_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_bias['Age'], 111.0, 0)
+        self.assertAlmostEqual(self.balance_statistics.unmatched_bias['Education'], 25.5, 0)
+
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
         covariate = [[2389.67900], [17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000],
