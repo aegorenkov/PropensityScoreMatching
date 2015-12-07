@@ -137,6 +137,10 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.assertAlmostEqual(self.balance_statistics.unmatched_t_statistic['Age'], 1.94, 2)
         self.assertAlmostEqual(self.balance_statistics.unmatched_t_statistic['Education'], 0.42, 2)
 
+    def test_unmatched_p_value_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_p_value['Age'], 0.089, 3)
+        self.assertAlmostEqual(self.balance_statistics.unmatched_p_value['Education'], 0.684, 3)
+
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
         covariate = [[2389.67900], [17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000],

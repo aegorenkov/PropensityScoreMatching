@@ -225,7 +225,7 @@ class Results(object):
         # return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
         treated = self.outcome[self.treated]
         controlled = self.outcome[~self.treated]
-        tstat = ttest_ind(treated, controlled)[0]
+        (tstat, _, _) = ttest_ind(treated, controlled)
         return tstat
 
     @property
@@ -296,7 +296,7 @@ class Results(object):
 
 class BalanceStatistics(pd.DataFrame):
     """
-    Represents balance statistics from a StatisticalMatching instance as a data frame
+    Class for balance statistics from a StatisticalMatching instance as a data frame
     """
 
     def __init__(self, statmatch):
@@ -306,12 +306,17 @@ class BalanceStatistics(pd.DataFrame):
         :return: BalanceStatistics instance
         """
         # Could be replaced with an ordered dictionary
-        columns = ['unmatched_treated_mean', 'unmatched_control_mean', 'unmatched_bias', 'unmatched_t_statistic']
+        columns = ['unmatched_treated_mean',
+                   'unmatched_control_mean',
+                   'unmatched_bias',
+                   'unmatched_t_statistic',
+                   'unmatched_p_value']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
                 'unmatched_control_mean': self._unmatched_control_mean(statmatch),
                 'unmatched_bias': self._unmatched_bias(statmatch),
-                'unmatched_t_statistic': self._unmatched_t_statistic(statmatch)}
+                'unmatched_t_statistic': self._unmatched_t_statistic(statmatch),
+                'unmatched_p_value': self._unmatched_p_value(statmatch)}
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
@@ -356,11 +361,24 @@ class BalanceStatistics(pd.DataFrame):
 
     def _unmatched_t_statistic(self, statmatch):
         """
-        Compute t-statistics for the difference of means test for every matching variables using vectorized operations
+        Compute t-statistics for the difference of means test for every matching variable using vectorized operations
 
         :param statmatch: StatisticalMatching instance that has been fitted
         :return: NumPy array containing t-stats for each matching variable
         """
         treated = np.array(statmatch.design_matrix[statmatch.names][statmatch.treated])
         control = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated])
-        return ttest_ind(treated, control)[0]
+        (tstat, _, _) = ttest_ind(treated, control)
+        return tstat
+
+    def _unmatched_p_value(self, statmatch):
+        """
+        Compute p-values for the difference of means test for every matching variable using vectorized operations
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing t-stats for each matching variable
+        """
+        treated = np.array(statmatch.design_matrix[statmatch.names][statmatch.treated])
+        control = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated])
+        (_, pvalue, _) = ttest_ind(treated, control)
+        return pvalue
