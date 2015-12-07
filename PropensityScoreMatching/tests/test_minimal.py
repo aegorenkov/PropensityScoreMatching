@@ -1,7 +1,6 @@
 import unittest
 import PropensityScoreMatching as PSM
 import pandas as pd
-import numpy as np
 import os
 
 LOCAL_DIR = os.path.dirname(__file__)
@@ -47,9 +46,6 @@ class TestMinimalSingle(unittest.TestCase):
         self.fail(msg='Not Implemented')
 
     def psm_should_return_correct_unmatched_t_statistic(self):
-        self.fail(msg='Not Implemented')
-
-    def psm_should_return_correct_unmatched_standard_error(self):
         self.fail(msg='Not Implemented')
 
     def psm_should_return_correct_matched_t_statistic(self):
@@ -136,6 +132,10 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
     def test_unmatched_percent_bias_should_be_correct(self):
         self.assertAlmostEqual(self.balance_statistics.unmatched_bias['Age'], 111.0, 0)
         self.assertAlmostEqual(self.balance_statistics.unmatched_bias['Education'], 25.5, 0)
+
+    def test_unmatched_t_statistic_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_t_statistic['Age'], 1.94, 2)
+        self.assertAlmostEqual(self.balance_statistics.unmatched_t_statistic['Education'], 0.42, 2)
 
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):

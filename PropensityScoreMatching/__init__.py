@@ -4,7 +4,6 @@ Created on Mon May 18 15:09:03 2015
 
 @author: Alexander
 """
-from _ast import Dict
 
 from statsmodels.api import families
 from statsmodels.api import GLM
@@ -12,7 +11,7 @@ from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
 import pandas as pd
 import numpy as np
-from collections import defaultdict, Sequence
+from collections import defaultdict
 
 
 # import sklearn.neighbors as sk
@@ -116,7 +115,7 @@ class StatisticalMatching(object):
                 raise AttributeError('No column names provided and names cannot be inferred from data.')
         return names
 
-    def fit(self, treated, design_matrix, names=[]):
+    def fit(self, treated, design_matrix, names=None):
         """Run logit or probit and return propensity score column"""
         link = families.links.logit
         family = families.Binomial(link)
@@ -307,11 +306,12 @@ class BalanceStatistics(pd.DataFrame):
         :return: BalanceStatistics instance
         """
         # Could be replaced with an ordered dictionary
-        columns = ['unmatched_treated_mean', 'unmatched_control_mean', 'unmatched_bias']
+        columns = ['unmatched_treated_mean', 'unmatched_control_mean', 'unmatched_bias', 'unmatched_t_statistic']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
                 'unmatched_control_mean': self._unmatched_control_mean(statmatch),
-                'unmatched_bias': self._unmatched_bias(statmatch)}
+                'unmatched_bias': self._unmatched_bias(statmatch),
+                'unmatched_t_statistic': self._unmatched_t_statistic(statmatch)}
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
@@ -353,3 +353,14 @@ class BalanceStatistics(pd.DataFrame):
         control_variance = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated].var())
         normal = np.sqrt((treated_variance + control_variance) / 2)
         return 100 * (self._unmatched_treated_mean(statmatch) - self._unmatched_control_mean(statmatch)) / normal
+
+    def _unmatched_t_statistic(self, statmatch):
+        """
+        Compute t-statistics for the difference of means test for every matching variables using vectorized operations
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing t-stats for each matching variable
+        """
+        treated = np.array(statmatch.design_matrix[statmatch.names][statmatch.treated])
+        control = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated])
+        return ttest_ind(treated, control)[0]
