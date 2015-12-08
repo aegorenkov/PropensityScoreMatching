@@ -315,7 +315,8 @@ class BalanceStatistics(pd.DataFrame):
                    'matched_treated_mean',
                    'matched_control_mean',
                    'matched_bias',
-                   'matched_t_statistic']
+                   'matched_t_statistic',
+                   'matched_p_value']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
                 'unmatched_control_mean': self._unmatched_control_mean(statmatch),
@@ -325,7 +326,8 @@ class BalanceStatistics(pd.DataFrame):
                 'matched_treated_mean': self._matched_treated_mean(statmatch),
                 'matched_control_mean': self._matched_control_mean(statmatch),
                 'matched_bias': self._matched_bias(statmatch),
-                'matched_t_statistic': self._matched_t_statistic(statmatch)}
+                'matched_t_statistic': self._matched_t_statistic(statmatch),
+                'matched_p_value': self._matched_p_value(statmatch)}
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
@@ -465,3 +467,36 @@ class BalanceStatistics(pd.DataFrame):
 
         (tstat, _, _) = ttest_ind(treated, control, weights=(None, weights))
         return tstat
+
+    def _matched_p_value(self, statmatch):
+        """
+        Compute p-values for the difference of matched means test for every matching variable
+        using vectorized operations
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing t-stats for each matching variable
+        """
+
+        def get_match_weights(matches):
+            """
+            Takes a list of match indicies and counts duplicates to determine weights
+            :param matches: Pandas or numpy array representing mathes
+            :return: Array of weights
+            """
+            weights = defaultdict(lambda: 0)
+            match_indicies = matches[np.isfinite(matches)]
+
+            for value in match_indicies:
+                weights[value] += 1
+            return np.asarray(weights.values())
+
+        has_match = np.isfinite(statmatch.matches)
+        match_index = np.asarray(statmatch.matches[has_match], dtype=np.int32)
+        unique_matches = np.unique(match_index)  # don't repeat weighted obs
+        weights = get_match_weights(statmatch.matches)
+
+        treated = np.array(statmatch.design_matrix[statmatch.names][has_match])
+        control = np.array(statmatch.design_matrix[statmatch.names].iloc[unique_matches])
+
+        (_, pvalue, _) = ttest_ind(treated, control, weights=(None, weights))
+        return pvalue
