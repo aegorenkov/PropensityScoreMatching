@@ -310,13 +310,19 @@ class BalanceStatistics(pd.DataFrame):
                    'unmatched_control_mean',
                    'unmatched_bias',
                    'unmatched_t_statistic',
-                   'unmatched_p_value']
+                   'unmatched_p_value',
+                   'matched_treated_mean',
+                   'matched_control_mean',
+                   'matched_bias']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
                 'unmatched_control_mean': self._unmatched_control_mean(statmatch),
                 'unmatched_bias': self._unmatched_bias(statmatch),
                 'unmatched_t_statistic': self._unmatched_t_statistic(statmatch),
-                'unmatched_p_value': self._unmatched_p_value(statmatch)}
+                'unmatched_p_value': self._unmatched_p_value(statmatch),
+                'matched_treated_mean': self._matched_treated_mean(statmatch),
+                'matched_control_mean': self._matched_control_mean(statmatch),
+                'matched_bias': self._matched_bias(statmatch)}
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
@@ -327,7 +333,7 @@ class BalanceStatistics(pd.DataFrame):
         """
         Compute the unmatched treated mean for every matching variable using vectorized operations
 
-        Expressed as: E[X_{i}| D_{i} = 1]
+        Expressed as: E[X_{1i}| D_{i} = 1]
 
         :param statmatch: StatisticalMatching instance that has been fitted
         :return: NumPy array containing means for each matching variable
@@ -338,7 +344,7 @@ class BalanceStatistics(pd.DataFrame):
         """
         Compute the unmatched control mean for every matching variable using vectorized operations
 
-        Expressed as: E[X_{i}| D_{i} = 0]
+        Expressed as: E[X_{1i}| D_{i} = 0]
 
         :param statmatch: StatisticalMatching instance that has been fitted
         :return: NumPy array containing means for each matching variable
@@ -382,3 +388,44 @@ class BalanceStatistics(pd.DataFrame):
         control = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated])
         (_, pvalue, _) = ttest_ind(treated, control)
         return pvalue
+
+    def _matched_treated_mean(self, statmatch):
+        """
+        Compute the matched treated mean for every matching variable using vectorized operations
+
+        Expressed as: E[X_{2i}| D_{i} = 1]
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing means for each matching variable
+        """
+        has_match = np.isfinite(statmatch.matches)
+        return np.array(statmatch.design_matrix[statmatch.names][has_match].mean())
+
+    def _matched_control_mean(self, statmatch):
+        """
+        Compute the matched control mean for every matching variable using vectorized operations
+
+        Expressed as: E[X_{2i}| D_{i} = 0]
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing means for each matching variable
+        """
+        has_match = np.isfinite(statmatch.matches)
+        match_index = np.asarray(statmatch.matches[has_match], dtype=np.int32)
+        return np.array(statmatch.design_matrix[statmatch.names].iloc[match_index].mean())
+
+    def _matched_bias(self, statmatch):
+        """
+        Compute the matched bias for every matching variable using vectorized operations
+
+        Expressed as: 100 * (m1m - m0m) / sqrt((v1m + v0m) / 2)
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing normalized percent bias for each matching variable
+        """
+        treated_variance = np.array(statmatch.design_matrix[statmatch.names][statmatch.treated].var())
+        control_variance = np.array(statmatch.design_matrix[statmatch.names][~statmatch.treated].var())
+
+        normal = np.sqrt((treated_variance + control_variance) / 2)
+
+        return 100 * (self._matched_treated_mean(statmatch) - self._matched_control_mean(statmatch)) / normal

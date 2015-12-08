@@ -141,6 +141,21 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.assertAlmostEqual(self.balance_statistics.unmatched_p_value['Age'], 0.089, 3)
         self.assertAlmostEqual(self.balance_statistics.unmatched_p_value['Education'], 0.684, 3)
 
+    def test_matched_treated_means_should_be_correct(self):
+        # This needs to be separate from unmatched means in case
+        # we use a matching procedure that eliminates treatment observation
+        self.assertAlmostEqual(self.balance_statistics.matched_treated_mean['Age'], 34, 2)
+        self.assertAlmostEqual(self.balance_statistics.matched_treated_mean['Education'], 10.5, 2)
+
+    def test_matched_control_means_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.matched_control_mean['Age'], 25.5, 2)
+        self.assertAlmostEqual(self.balance_statistics.matched_control_mean['Education'], 10.5, 2)
+
+    def test_matched_percent_bias_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.matched_bias['Age'], 82.0, 0)
+        self.assertAlmostEqual(self.balance_statistics.matched_bias['Education'], 0.0, 0)
+
+
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
         covariate = [[2389.67900], [17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000],
