@@ -155,6 +155,10 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.assertAlmostEqual(self.balance_statistics.matched_bias['Age'], 82.0, 0)
         self.assertAlmostEqual(self.balance_statistics.matched_bias['Education'], 0.0, 0)
 
+    def test_matched_t_statistic_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.matched_t_statistic['Age'], 1.14, 2)
+        self.assertAlmostEqual(self.balance_statistics.matched_t_statistic['Education'], 0.00, 2)
+
 
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):

@@ -9,6 +9,7 @@ from statsmodels.api import families
 from statsmodels.api import GLM
 from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
+from statsmodels.regression.linear_model import WLS
 import pandas as pd
 import numpy as np
 from collections import defaultdict
@@ -313,7 +314,8 @@ class BalanceStatistics(pd.DataFrame):
                    'unmatched_p_value',
                    'matched_treated_mean',
                    'matched_control_mean',
-                   'matched_bias']
+                   'matched_bias',
+                   'matched_t_statistic']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
                 'unmatched_control_mean': self._unmatched_control_mean(statmatch),
@@ -322,7 +324,8 @@ class BalanceStatistics(pd.DataFrame):
                 'unmatched_p_value': self._unmatched_p_value(statmatch),
                 'matched_treated_mean': self._matched_treated_mean(statmatch),
                 'matched_control_mean': self._matched_control_mean(statmatch),
-                'matched_bias': self._matched_bias(statmatch)}
+                'matched_bias': self._matched_bias(statmatch),
+                'matched_t_statistic': self._matched_t_statistic(statmatch)}
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
@@ -429,3 +432,36 @@ class BalanceStatistics(pd.DataFrame):
         normal = np.sqrt((treated_variance + control_variance) / 2)
 
         return 100 * (self._matched_treated_mean(statmatch) - self._matched_control_mean(statmatch)) / normal
+
+    def _matched_t_statistic(self, statmatch):
+        """
+        Compute t-statistics for the difference of  matched means test for every matching variable
+        using vectorized operations
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing t-stats for each matching variable
+        """
+
+        def get_match_weights(matches):
+            """
+            Takes a list of match indicies and counts duplicates to determine weights
+            :param matches: Pandas or numpy array representing mathes
+            :return: Array of weights
+            """
+            weights = defaultdict(lambda: 0)
+            match_indicies = matches[np.isfinite(matches)]
+
+            for value in match_indicies:
+                weights[value] += 1
+            return np.asarray(weights.values())
+
+        has_match = np.isfinite(statmatch.matches)
+        match_index = np.asarray(statmatch.matches[has_match], dtype=np.int32)
+        unique_matches = np.unique(match_index)  # don't repeat weighted obs
+        weights = get_match_weights(statmatch.matches)
+
+        treated = np.array(statmatch.design_matrix[statmatch.names][has_match])
+        control = np.array(statmatch.design_matrix[statmatch.names].iloc[unique_matches])
+
+        (tstat, _, _) = ttest_ind(treated, control, weights=(None, weights))
+        return tstat
