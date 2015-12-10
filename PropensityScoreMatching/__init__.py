@@ -316,7 +316,8 @@ class BalanceStatistics(pd.DataFrame):
                    'matched_control_mean',
                    'matched_bias',
                    'matched_t_statistic',
-                   'matched_p_value']
+                   'matched_p_value',
+                   'bias_reduction']
 
         data = {'unmatched_treated_mean': self._unmatched_treated_mean(statmatch),
                 'unmatched_control_mean': self._unmatched_control_mean(statmatch),
@@ -327,7 +328,8 @@ class BalanceStatistics(pd.DataFrame):
                 'matched_control_mean': self._matched_control_mean(statmatch),
                 'matched_bias': self._matched_bias(statmatch),
                 'matched_t_statistic': self._matched_t_statistic(statmatch),
-                'matched_p_value': self._matched_p_value(statmatch)}
+                'matched_p_value': self._matched_p_value(statmatch),
+                'bias_reduction': self._bias_reduction(statmatch)}
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
@@ -480,7 +482,7 @@ class BalanceStatistics(pd.DataFrame):
         def get_match_weights(matches):
             """
             Takes a list of match indicies and counts duplicates to determine weights
-            :param matches: Pandas or numpy array representing mathes
+            :param matches: Pandas or numpy array representing matches
             :return: Array of weights
             """
             weights = defaultdict(lambda: 0)
@@ -500,3 +502,16 @@ class BalanceStatistics(pd.DataFrame):
 
         (_, pvalue, _) = ttest_ind(treated, control, weights=(None, weights))
         return pvalue
+
+    def _bias_reduction(self, statmatch):
+        """
+        Compute the bias reduced by matching for every matching variable using vectorized operations
+
+        Expressed as: 100*(abs(bias) - abs(biasm))/abs(bias)
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: NumPy array containing t-stats for each matching variable
+        """
+        biasm = self._matched_bias(statmatch)
+        bias = self._unmatched_bias(statmatch)
+        return 100 * (abs(bias) - abs(biasm)) / abs(bias)

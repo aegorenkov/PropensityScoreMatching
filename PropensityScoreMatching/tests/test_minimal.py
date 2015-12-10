@@ -163,6 +163,10 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.assertAlmostEqual(self.balance_statistics.matched_p_value['Age'], 0.298, 3)
         self.assertAlmostEqual(self.balance_statistics.matched_p_value['Education'], 1.000, 3)
 
+    def test_bias_reduction_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.bias_reduction['Age'], 26.1, 1)
+        self.assertAlmostEqual(self.balance_statistics.bias_reduction['Education'], 100.0, 1)
+
 
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
