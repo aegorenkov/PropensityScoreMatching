@@ -179,6 +179,9 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
     def test_matched_median_bias_should_be_correct(self):
         self.assertAlmostEqual(self.balance_statistics.matched_median_bias, 41.0, 1)
 
+    def test_unmatched_pseudo_r2_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_prsquared, 0.266, 2)
+
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
         covariate = [[2389.67900], [17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000],

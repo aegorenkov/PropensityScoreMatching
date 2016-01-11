@@ -9,6 +9,7 @@ from statsmodels.api import families
 from statsmodels.api import GLM
 from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
+from statsmodels.discrete.discrete_model import Logit
 import pandas as pd
 import numpy as np
 from collections import defaultdict
@@ -342,6 +343,10 @@ class BalanceStatistics(pd.DataFrame):
         # unmatched_treated_mean, unmatched_controlled_mean, unmatched_bias, unmatched_t_test, unmatched_p_values
         # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value,
         # bias_reduction
+
+        reg = Logit(statmatch.treated, statmatch.design_matrix)
+        fitted_reg = reg.fit()
+        self.unmatched_prsquared = fitted_reg.prsquared
 
     def _unmatched_treated_mean(self, statmatch):
         """
