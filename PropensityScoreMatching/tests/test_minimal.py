@@ -167,6 +167,17 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
         self.assertAlmostEqual(self.balance_statistics.bias_reduction['Age'], 26.1, 1)
         self.assertAlmostEqual(self.balance_statistics.bias_reduction['Education'], 100.0, 1)
 
+    def test_unmatched_mean_bias_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_mean_bias, 68.3, 1)
+
+    def test_matched_mean_bias_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.matched_mean_bias, 41.0, 1)
+
+    def test_unmatched_median_bias_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.unmatched_median_bias, 68.3, 1)
+
+    def test_matched_median_bias_should_be_correct(self):
+        self.assertAlmostEqual(self.balance_statistics.matched_median_bias, 41.0, 1)
 
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):

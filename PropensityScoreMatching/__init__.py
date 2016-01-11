@@ -214,8 +214,6 @@ class Results(object):
         """
         Calculates standard error of naive treatment effect
         """
-        # res = fit_reg(self.outcome, self.treated)
-        # return res.bse[1]
         return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_t_statistic)
 
     @property
@@ -223,7 +221,6 @@ class Results(object):
         """
         Calculate the t-statistics of the unmatched standard error
         """
-        # return (self.unmatched_treated_mean - self.unmatched_control_mean) / float(self.unmatched_standard_error)
         treated = self.outcome[self.treated]
         controlled = self.outcome[~self.treated]
         (tstat, _, _) = ttest_ind(treated, controlled)
@@ -306,6 +303,7 @@ class BalanceStatistics(pd.DataFrame):
         :param statmatch: StatisticalMatching instance that has been fitted
         :return: BalanceStatistics instance
         """
+
         # Could be replaced with an ordered dictionary
         columns = ['unmatched_treated_mean',
                    'unmatched_control_mean',
@@ -333,8 +331,9 @@ class BalanceStatistics(pd.DataFrame):
 
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
         # columns should be
-        # unmatched_treated_mean, unmatched_controlled_mean, unmathced_bias, unmatched_t_test, unmatched_p_values
-        # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value
+        # unmatched_treated_mean, unmatched_controlled_mean, unmatched_bias, unmatched_t_test, unmatched_p_values
+        # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value,
+        # bias_reduction
 
     def _unmatched_treated_mean(self, statmatch):
         """
@@ -515,3 +514,47 @@ class BalanceStatistics(pd.DataFrame):
         biasm = self._matched_bias(statmatch)
         bias = self._unmatched_bias(statmatch)
         return 100 * (abs(bias) - abs(biasm)) / abs(bias)
+
+    @property
+    def unmatched_mean_bias(self):
+        """
+        Compute the matched mean bias of every covariate in check balance statistics
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: float
+        """
+
+        return self.unmatched_bias.mean()
+
+    @property
+    def matched_mean_bias(self):
+        """
+        Compute the matched mean bias of every covariate in check balance statistics
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: float
+        """
+
+        return self.matched_bias.mean()
+
+    @property
+    def unmatched_median_bias(self):
+        """
+        Compute the unmatched median bias of every covariate in check balance statistics
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: float
+        """
+
+        return self.unmatched_bias.median()
+
+    @property
+    def matched_median_bias(self):
+        """
+        Compute the matched median bias of every covariate in check balance statistics
+
+        :param statmatch: StatisticalMatching instance that has been fitted
+        :return: float
+        """
+
+        return self.matched_bias.median()
