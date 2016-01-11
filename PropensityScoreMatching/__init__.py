@@ -9,7 +9,6 @@ from statsmodels.api import families
 from statsmodels.api import GLM
 from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
-from statsmodels.regression.linear_model import WLS
 import pandas as pd
 import numpy as np
 from collections import defaultdict
@@ -38,44 +37,41 @@ class Match(object):
     @staticmethod
     def _extract_groups(treated, covariates):
         groups = treated == treated.unique()[1]
-        n = len(groups)
-        n1 = groups.sum()
-        n2 = n - n1
-        g1, g2 = covariates[groups == 1], covariates[groups == 0]
-        return (g1, g2, n)
+        observation_count = len(groups)
+        treated_group, control_group = covariates[groups == 1], covariates[groups == 0]
+        return (treated_group, control_group, observation_count)
 
     @staticmethod
-    def _naive_match(g1, g2, n):
-        matches = pd.Series(np.empty(n))
+    def _naive_match(treated_group, control_group, obseration_count):
+        matches = pd.Series(np.empty(obseration_count))
         matches[:] = np.NAN
 
-        for m in g1.index:
-            # Note this returns a vector/series
-            dist = abs(g1[m] - g2)
+        for match in treated_group.index:
+            dist = abs(treated_group[match] - control_group)  # Note this returns a vector/series
             # potential set caliper later
             if dist.min() <= 100:
-                matches[m] = dist.argmin()
+                matches[match] = dist.argmin()
 
         return matches
 
     @staticmethod
-    def _kd_match(g1, g2, n):
-        tree = sk.KDTree([[x] for x in g2], leaf_size=1, metric='minkowski', p=2)
+    def _kd_match(treated_group, control_group, observation_count):
+        tree = sk.KDTree([[x] for x in control_group], leaf_size=1, metric='minkowski', p=2)
 
-        matches = pd.Series(np.empty(n))
+        matches = pd.Series(np.empty(observation_count))
         matches[:] = np.NAN
 
-        for m in g1.index:
-            dist, ind = tree.query(g1[m], k=1, breadth_first=True)
-            matches[m] = g2.index[ind[0]][0]
+        for match in treated_group.index:
+            dist, ind = tree.query(treated_group[match], k=1, breadth_first=True)
+            matches[match] = control_group.index[ind[0]][0]
         return matches
 
     def match(self, treated, covariates):
-        g1, g2, n = self._extract_groups(treated, covariates)
+        treated_group, control_group, observation_count = self._extract_groups(treated, covariates)
         if self.match_algorithm == 'brute':
-            matches = self._naive_match(g1, g2, n)
+            matches = self._naive_match(treated_group, control_group, observation_count)
         elif self.match_algorithm == 'kdtree':
-            matches = self._kd_match(g1, g2, n)
+            matches = self._kd_match(treated_group, control_group, observation_count)
         else:
             pass
         return matches
@@ -107,6 +103,12 @@ class StatisticalMatching(object):
         return Results(outcome=outcome, psm=self)
 
     def _set_names(self, names):
+        """
+        Finds a source of names. Intended to be used to apply names to the statistical matching instance
+
+        :param names: List of names provided by user or dataframe
+        :return: list of names
+        """
         if names:
             return names
         else:
@@ -116,20 +118,25 @@ class StatisticalMatching(object):
                 raise AttributeError('No column names provided and names cannot be inferred from data.')
         return names
 
-    def fit(self, treated, design_matrix, names=None):
-        """Run logit or probit and return propensity score column"""
-        link = families.links.logit
+    def _create_propensity_scores(self, treated, design_matrix, link_type='logit'):
+        if link_type == 'logit':
+            link = families.links.logit
+        elif link_type == 'probit':
+            link = families.links.probit
+
         family = families.Binomial(link)
-        design_matrix = add_constant(design_matrix)
         reg = GLM(treated, design_matrix, family=family)
         fitted_reg = reg.fit()
-        pscore = fitted_reg.fittedvalues
+        return fitted_reg
 
-        self.fitted_reg = fitted_reg
+    def fit(self, treated, design_matrix, names=None):
+        """Store propensity score and relevant data from propensity score regression"""
+        self.design_matrix = add_constant(design_matrix)
         self.treated = treated.astype('bool')
-        self.design_matrix = design_matrix
+
+        self.fitted_reg = self._create_propensity_scores(self.treated, self.design_matrix)
+        self.pscore = self.fitted_reg.fittedvalues
         self.names = self._set_names(names)
-        self.pscore = pscore
 
     def match(self, match_method='neighbor'):
         """Take fitted propensity scores and match between treatment and
@@ -299,7 +306,8 @@ class BalanceStatistics(pd.DataFrame):
 
     def __init__(self, statmatch):
         """
-        Populate a pandas data frame and pass it forward as BalanceStatistics
+        Populate a pandas data frame and pass it forward as BalanceStatistics. Generally, operations are vectorized
+        where possible and each method works on several covariates from a statistical matching routine at a time.
         :param statmatch: StatisticalMatching instance that has been fitted
         :return: BalanceStatistics instance
         """
@@ -520,7 +528,6 @@ class BalanceStatistics(pd.DataFrame):
         """
         Compute the matched mean bias of every covariate in check balance statistics
 
-        :param statmatch: StatisticalMatching instance that has been fitted
         :return: float
         """
 
@@ -531,7 +538,6 @@ class BalanceStatistics(pd.DataFrame):
         """
         Compute the matched mean bias of every covariate in check balance statistics
 
-        :param statmatch: StatisticalMatching instance that has been fitted
         :return: float
         """
 
@@ -542,7 +548,6 @@ class BalanceStatistics(pd.DataFrame):
         """
         Compute the unmatched median bias of every covariate in check balance statistics
 
-        :param statmatch: StatisticalMatching instance that has been fitted
         :return: float
         """
 
@@ -553,7 +558,6 @@ class BalanceStatistics(pd.DataFrame):
         """
         Compute the matched median bias of every covariate in check balance statistics
 
-        :param statmatch: StatisticalMatching instance that has been fitted
         :return: float
         """
 
