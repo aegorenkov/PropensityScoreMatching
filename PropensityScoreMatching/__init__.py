@@ -347,6 +347,8 @@ class BalanceStatistics(pd.DataFrame):
         reg = Logit(statmatch.treated, statmatch.design_matrix)
         fitted_reg = reg.fit()
         self.unmatched_prsquared = fitted_reg.prsquared
+        self.unmatched_llr = fitted_reg.llr
+        self.unmatched_llr_pvalue = fitted_reg.llr_pvalue
 
     def _unmatched_treated_mean(self, statmatch):
         """
