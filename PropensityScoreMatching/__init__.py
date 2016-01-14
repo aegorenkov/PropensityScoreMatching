@@ -9,9 +9,9 @@ from statsmodels.api import families
 from statsmodels.api import GLM
 from statsmodels.tools.tools import add_constant
 from statsmodels.stats.weightstats import ttest_ind
-from statsmodels.discrete.discrete_model import Logit
 import pandas as pd
 import numpy as np
+from scipy.stats import chisqprob
 from collections import defaultdict
 
 
@@ -338,17 +338,33 @@ class BalanceStatistics(pd.DataFrame):
                 'matched_p_value': self._matched_p_value(statmatch),
                 'bias_reduction': self._bias_reduction(statmatch)}
 
+        # dataframe with column defined above
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
-        # columns should be
-        # unmatched_treated_mean, unmatched_controlled_mean, unmatched_bias, unmatched_t_test, unmatched_p_values
-        # matched_treated_mean, matched_controlled_mean, matched_bias, bias_reduction, matched_t_test, matched_p_value,
-        # bias_reduction
 
-        reg = Logit(statmatch.treated, statmatch.design_matrix)
+        link = families.links.probit
+        family = families.Binomial(link)
+        reg = GLM(statmatch.treated, statmatch.design_matrix, family=family)
         fitted_reg = reg.fit()
-        self.unmatched_prsquared = fitted_reg.prsquared
-        self.unmatched_llr = fitted_reg.llr
-        self.unmatched_llr_pvalue = fitted_reg.llr_pvalue
+
+        self.unmatched_prsquared = 1 - fitted_reg.llf / fitted_reg.llnull
+        self.unmatched_llr = -2 * (fitted_reg.llnull - fitted_reg.llf)
+        self.unmatched_llr_pvalue = chisqprob(self.unmatched_llr, fitted_reg.df_model)
+
+        # matched_treated
+        has_match = np.isfinite(statmatch.matches)
+        treated_index = has_match[has_match == True].index
+        match_index = np.asarray(statmatch.matches[has_match], dtype=np.int32)
+        regression_index = treated_index.append(match_index)
+
+        link = families.links.probit
+        family = families.Binomial(link)
+        reg = GLM(statmatch.treated.iloc[regression_index], statmatch.design_matrix.iloc[regression_index],
+                  family=family)
+        fitted_reg = reg.fit()
+
+        self.matched_prsquared = 1 - fitted_reg.llf / fitted_reg.llnull
+        self.matched_llr = -2 * (fitted_reg.llnull - fitted_reg.llf)
+        self.matched_llr_pvalue = chisqprob(self.matched_llr, fitted_reg.df_model)
 
     def _unmatched_treated_mean(self, statmatch):
         """
