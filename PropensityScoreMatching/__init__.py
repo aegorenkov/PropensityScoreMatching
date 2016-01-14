@@ -341,27 +341,13 @@ class BalanceStatistics(pd.DataFrame):
         # dataframe with column defined above
         super(BalanceStatistics, self).__init__(data, index=statmatch.names, columns=columns)
 
-        link = families.links.probit
-        family = families.Binomial(link)
-        reg = GLM(statmatch.treated, statmatch.design_matrix, family=family)
-        fitted_reg = reg.fit()
-
+        # Whenever it becomes a problem that we have three copies of how to run regression, we can refactor this into another class
+        fitted_reg = self._fit_unmatched_regression(statmatch)
         self.unmatched_prsquared = 1 - fitted_reg.llf / fitted_reg.llnull
         self.unmatched_llr = -2 * (fitted_reg.llnull - fitted_reg.llf)
         self.unmatched_llr_pvalue = chisqprob(self.unmatched_llr, fitted_reg.df_model)
 
-        # matched_treated
-        has_match = np.isfinite(statmatch.matches)
-        treated_index = has_match[has_match == True].index
-        match_index = np.asarray(statmatch.matches[has_match], dtype=np.int32)
-        regression_index = treated_index.append(match_index)
-
-        link = families.links.probit
-        family = families.Binomial(link)
-        reg = GLM(statmatch.treated.iloc[regression_index], statmatch.design_matrix.iloc[regression_index],
-                  family=family)
-        fitted_reg = reg.fit()
-
+        fitted_reg = self._fit_matched_regression(statmatch)
         self.matched_prsquared = 1 - fitted_reg.llf / fitted_reg.llnull
         self.matched_llr = -2 * (fitted_reg.llnull - fitted_reg.llf)
         self.matched_llr_pvalue = chisqprob(self.matched_llr, fitted_reg.df_model)
@@ -585,3 +571,21 @@ class BalanceStatistics(pd.DataFrame):
         """
 
         return self.matched_bias.median()
+
+    def _fit_unmatched_regression(self, statmatch):
+        link = families.links.probit
+        family = families.Binomial(link)
+        reg = GLM(statmatch.treated, statmatch.design_matrix, family=family)
+        return reg.fit()
+
+    def _fit_matched_regression(self, statmatch):
+        has_match = np.isfinite(statmatch.matches)
+        treated_index = has_match[has_match == True].index
+        match_index = np.asarray(statmatch.matches[has_match], dtype=np.int32)
+        regression_index = treated_index.append(match_index)
+
+        link = families.links.probit
+        family = families.Binomial(link)
+        reg = GLM(statmatch.treated.iloc[regression_index], statmatch.design_matrix.iloc[regression_index],
+                  family=family)
+        return reg.fit()
