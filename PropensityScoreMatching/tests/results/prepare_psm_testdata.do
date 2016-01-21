@@ -89,6 +89,9 @@ export delimited using "nsw_all_random3.csv", replace
 import delimited "nsw_all_minimal.csv", case(preserve) clear
 psmatch2 Treated Age, outcome(RE78) logit
 pstest Age, summary both
+mhbounds Black, gamma(1 (0.2) 5)
+mhbounds Married, gamma(1 (0.2) 5)
+mhbounds Nodegree, gamma(1 (0.2) 5)
 export delimited using "nsw_all_minimal_pscoresimple.csv", replace
 
 import delimited "nsw_all_random1.csv", case(preserve) clear
