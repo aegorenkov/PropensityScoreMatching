@@ -589,3 +589,163 @@ class BalanceStatistics(pd.DataFrame):
         reg = GLM(statmatch.treated.iloc[regression_index], statmatch.design_matrix.iloc[regression_index],
                   family=family)
         return reg.fit()
+
+
+gamma = 1
+Y = 1
+N = 1
+N1 = 1
+
+
+class RosenbaumBounds(object):
+    def __init__(self):
+        self.N1 = 4.0
+        self.N0 = 3.0
+        self.N = self.N1 + self.N0
+        self.Y1 = 4.0
+        self.Y = 6.0
+
+    def q_mh(self, gamma, bound_type):
+        EXPECTED_NO_EFFECT = 0.5
+
+        def abs_diff(Y, E):
+            return np.abs(Y - E)
+
+        if gamma == 1:
+            n1 = self.N1
+            n0 = self.N0
+            n = self.N
+            y = self.Y
+            y1 = self.Y1
+
+            j6 = n1 * y / n
+            j8 = n1 * n0 * y * (n - y) / ((n ** 2) * (n - 1.0))
+
+            q_mh_plus = self._standard_z_score(
+                value=abs_diff(y1, j6),
+                mean=EXPECTED_NO_EFFECT,
+                standard_deviation=np.sqrt(j8)
+            )
+
+        else:
+            expected_successes = self._expected_successes(gamma=gamma, bound_type=bound_type, successes=self.Y,
+                                                          treated_size=self.N1,
+                                                          total_observations=self.N)
+            q_mh_plus = self._standard_z_score(
+                value=abs_diff(self.Y1, expected_successes),
+                mean=EXPECTED_NO_EFFECT,
+                standard_deviation=np.sqrt(
+                    self._variance_treated_successes(expected_successes, self.Y, self.N1, self.N))
+            )
+        return q_mh_plus
+
+    def q_mh_plus(self, gamma):
+        """
+        Mantel-Haenzel test-statistic for an upper bound on the odds-ratio
+
+        :param gamma: Parameter for the bound, odds-ratio < gamma
+        :return: Mantel-Haenzel test-statistic
+        """
+        return self.q_mh(gamma, bound_type='upper')
+
+    def q_mh_minus(self, gamma):
+        """
+        Mantel-Haenzel test-statistic for a lower bound on the odds-ratio
+
+        :param gamma: Parameter for the bound, 1/gamma < odds-ratio
+        :return: Mantel-Haenzel test-statistic
+        """
+        return self.q_mh(gamma, bound_type='lower')
+
+    def _expected_successes(self, gamma, bound_type, successes, treated_size, total_observations):
+        """
+        Returns expected number of successes for a given upper or lower bound on the odds_ratio, gamma, of two
+        observations being in the treatment group.
+
+        :param gamma: Odds-ratio bound
+        :param bound_type: upper or lower bound of expected successes ['upper', 'lower']
+        :param successes: The actual number of successful outcomes in the data
+        :param treated_size: The number of observations in treated group in the data
+        :param total_observations: The total number of observations in the data
+        :return: float
+        """
+
+        def quadratic_root(a, b, c):
+            """
+            Helper function to solve equations of the form a*x**2 + b*x + c = 0
+
+            :param a: First coefficient in a quadratic equation
+            :param b: Second coefficient in a quadratic equation
+            :param c: Third coefficient in a quadratic equation
+            :return: tuple of quadratic roots
+            """
+            upper = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+            lower = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+
+            return (upper, lower)
+
+        def is_in_support(expected_successes, successes, treated_size, total_observations):
+            """
+            Determines whether the expected_successes value is within the bound for a Mantel-Haenszel test-statistic
+            which is based on a hypergeometric distribution and has the same support function.
+
+            support: k in {max(0, N1 + Y1 - N), min(Y1,N1)}
+
+            :param expected_successes: E
+            :param successes: Y1 or K
+            :param treated_size: N1 or n
+            :param total_observations: N
+            :return: True or False
+            """
+            lower_bound = max(0, successes + treated_size - total_observations)
+            upper_bound = min(successes, treated_size)
+
+            return lower_bound < expected_successes < upper_bound
+
+        if bound_type == 'upper':
+            odds_ratio_bound = gamma
+        elif bound_type == 'lower':
+            odds_ratio_bound = 1 / gamma
+
+        a = odds_ratio_bound - 1
+        b = -((odds_ratio_bound - 1) * (treated_size + successes) + total_observations)
+        c = odds_ratio_bound * successes * treated_size
+
+        upper_guess, lower_guess = quadratic_root(a, b, c)
+
+        if is_in_support(upper_guess, successes, treated_size, total_observations):
+            return upper_guess
+        elif is_in_support(lower_guess, successes, treated_size, total_observations):
+            return lower_guess
+
+    def _variance_treated_successes(self, expected_successes, successes, treated_size, total_observations):
+        """
+        Calculates the large sample variance approximation of the Mantel-Haenzel test-statistic.
+        As stated in Becker and Caliendo, mhbounds - Sensitivity Analysis for Average Treatment Effects, Jan. 2007
+
+        :param expected_successes: E
+        :param successes: Y1
+        :param treated_size: N1
+        :param total_observations: N
+        :return: float
+        """
+
+        hypergeometric_variance_approximation = (
+                                                    (1 / expected_successes) +
+                                                    (1 / (successes - expected_successes)) +
+                                                    (1 / (treated_size - expected_successes)) +
+                                                    (1 / (
+                                                        total_observations - successes - treated_size + expected_successes))
+                                                ) ** -1
+        return hypergeometric_variance_approximation
+
+    def _standard_z_score(self, value, mean, standard_deviation):
+        """
+        Standardizes z-score
+
+        :param value: Value of the element in the distribution
+        :param mean: Normal distribution mean, mu
+        :param standard_deviation: Normal distribution standard deviation, sigma
+        :return: z-score
+        """
+        return (value - mean) / standard_deviation

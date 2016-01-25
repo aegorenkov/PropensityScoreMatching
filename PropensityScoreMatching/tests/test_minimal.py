@@ -197,6 +197,7 @@ class TestMinimalAgeEducationBalanceStatistics(unittest.TestCase):
     def test_matched_likelihood_ratio_pvalue_should_be_correct(self):
         self.assertAlmostEqual(self.balance_statistics.matched_llr_pvalue, 0.436, 2)
 
+
 class TestFitReg(unittest.TestCase):
     def test_fit_reg_should_solve(self):
         covariate = [[2389.67900], [17685.18000], [647.20459], [6771.62210], [3523.57790], [0.00000], [0.00000],
@@ -205,3 +206,35 @@ class TestFitReg(unittest.TestCase):
         treated = [False, True, True, False, False, False, True, False, True, False]
         treated = [[0], [1], [1], [0], [0], [0], [1], [0], [1], [0]]
         res = PSM.fit_reg(covariate, treated)
+
+
+class TestRosenbaumBounds(unittest.TestCase):
+    def setUp(self):
+        # filepath = os.path.join('results', 'nsw_all_minimal_pscore_age_education.csv')
+        # self.data = pd.read_csv(filepath)
+        # self.outcome = self.data[u'Black']
+        # self.treated = self.data[u'Treated']
+        # self.design_vars = [u'Age', u'Education']
+        # self.design_matrix = self.data[self.design_vars]
+        # self.psm = PSM.StatisticalMatching()
+        # self.psm.fit(self.treated, self.design_matrix, names=self.design_vars)
+        # self.psm.match()
+        self.bounds = PSM.RosenbaumBounds()
+
+    def test_expected_successes_gamma_1(self):
+        self.assertEqual(self.bounds._expected_successes(1, 'upper', 6.0, 4.0, 7.0), None)
+
+    def test_expected_successes(self):
+        self.assertEqual(self.bounds._expected_successes(1.2, 'upper', 6.0, 4.0, 7.0), 3.4671336893257196)
+
+    def test_q_mh_plus_1(self):
+        self.assertAlmostEqual(self.bounds.q_mh_plus(gamma=1), 0.144338, 5)
+
+    def test_q_mh_plus_1_2(self):
+        self.assertAlmostEqual(self.bounds.q_mh_plus(gamma=1.2), 0.071257, 5)
+
+    def test_q_mh_minus_1(self):
+        self.assertAlmostEqual(self.bounds.q_mh_minus(gamma=1), 0.144338, 5)
+
+    def test_q_mh_minus_1_2(self):
+        self.assertAlmostEqual(self.bounds.q_mh_minus(gamma=1.2), 0.24138, 5)
