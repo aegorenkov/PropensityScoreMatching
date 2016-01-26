@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\all_results.log
   log type:  text
- opened on:  21 Jan 2016, 17:24:12
+ opened on:  26 Jan 2016, 16:12:39
 
 . 
 . use "nsw_all.dta", clear
@@ -473,6 +473,108 @@ Education              U  |   10.5       10     25.5         |   0.42  0.684 |  
 -----------------------------------------------------------------------------------
 * if B>25%, R outside [0.5; 2]
 
+. mhbounds Black, gamma(1 (0.2) 5)
+
+Mantel-Haenszel (1959) bounds for variable Black
+
+Gamma         Q_mh+     Q_mh-     p_mh+     p_mh-
+-------------------------------------------------
+    1        .353553   .353553   .361837   .361837  
+  1.2        .301918    .47471   .381357   .317497  
+  1.4         .23093    .55063   .408684   .290944  
+  1.6        .170093   .618205   .432469    .26822  
+  1.8        .116792   .679437   .453513    .24843  
+    2        .069306   .735679   .472373   .230963  
+  2.2        .026443   .787884   .489452   .215382  
+  2.4       -.012659   .836752    .50505   .201366  
+  2.6       -.048639   .882812   .519397   .188669  
+  2.8       -.081988   .926472   .532672     .1771  
+    3       -.113089   .968054    .54502   .166509  
+  3.2       -.142246   1.00782   .556557   .156771  
+  3.4       -.169706   1.04597   .567379   .147787  
+  3.6       -.195672    1.0827   .577566   .139471  
+  3.8       -.220312   1.11813   .587186   .131755  
+    4       -.243767   1.15241   .596294   .124576  
+  4.2       -.266158   1.18563   .604941   .117885  
+  4.4       -.287587   1.21788   .613168   .111635  
+  4.6       -.308142   1.24925   .621013   .105787  
+  4.8         -.3279   1.27979   .628506   .100309  
+    5       -.346928   1.30959   .635677   .095168  
+
+Gamma : odds of differential assignment due to unobserved factors
+Q_mh+ : Mantel-Haenszel statistic (assumption: overestimation of treatment effect)
+Q_mh- : Mantel-Haenszel statistic (assumption: underestimation of treatment effect)
+p_mh+ : significance level (assumption: overestimation of treatment effect)
+p_mh- : significance level (assumption: underestimation of treatment effect)
+
+. mhbounds Married, gamma(1 (0.2) 5)
+
+Mantel-Haenszel (1959) bounds for variable Married
+
+Gamma         Q_mh+     Q_mh-     p_mh+     p_mh-
+-------------------------------------------------
+    1        .353553   .353553   .361837   .361837  
+  1.2         .47471   .301918   .317497   .381357  
+  1.4         .55063    .23093   .290944   .408684  
+  1.6        .618205   .170093    .26822   .432469  
+  1.8        .679437   .116792    .24843   .453513  
+    2        .735679   .069306   .230963   .472373  
+  2.2        .787884   .026443   .215382   .489452  
+  2.4        .836752  -.012659   .201366    .50505  
+  2.6        .882812  -.048639   .188669   .519397  
+  2.8        .926472  -.081988     .1771   .532672  
+    3        .968054  -.113089   .166509    .54502  
+  3.2        1.00782  -.142246   .156771   .556557  
+  3.4        1.04597  -.169706   .147787   .567379  
+  3.6         1.0827  -.195672   .139471   .577566  
+  3.8        1.11813  -.220312   .131755   .587186  
+    4        1.15241  -.243767   .124576   .596294  
+  4.2        1.18563  -.266158   .117885   .604941  
+  4.4        1.21788  -.287587   .111635   .613168  
+  4.6        1.24925  -.308142   .105787   .621013  
+  4.8        1.27979    -.3279   .100309   .628506  
+    5        1.30959  -.346928   .095168   .635677  
+
+Gamma : odds of differential assignment due to unobserved factors
+Q_mh+ : Mantel-Haenszel statistic (assumption: overestimation of treatment effect)
+Q_mh- : Mantel-Haenszel statistic (assumption: underestimation of treatment effect)
+p_mh+ : significance level (assumption: overestimation of treatment effect)
+p_mh- : significance level (assumption: underestimation of treatment effect)
+
+. mhbounds Nodegree, gamma(1 (0.2) 5)
+
+Mantel-Haenszel (1959) bounds for variable Nodegree
+
+Gamma         Q_mh+     Q_mh-     p_mh+     p_mh-
+-------------------------------------------------
+    1        .279508   .279508   .389927   .389927  
+  1.2        .402889   .210517   .343515   .416632  
+  1.4        .485645   .130231   .313609   .448192  
+  1.6        .558184   .060976   .288359   .475689  
+  1.8        .622898  -1.7e-15   .266676        .5  
+    2        .681414  -.054542   .247805   .521748  
+  2.2        .734895  -.103947   .231202   .541394  
+  2.4        .784196  -.149161   .216462   .559287  
+  2.6        .829972   -.19089   .203277   .575694  
+  2.8        .872729  -.229682   .191405    .59083  
+    3        .912871  -.265961   .180655   .604866  
+  3.2        .950725  -.300071   .170872   .617939  
+  3.4        .986559  -.332288    .16193   .630164  
+  3.6        1.02059  -.362838   .153723   .641637  
+  3.8        1.05302  -.391912   .146166   .652438  
+    4        1.08399  -.419667   .139184   .662636  
+  4.2        1.11365  -.446239   .132715   .672288  
+  4.4         1.1421  -.471741   .126706   .681444  
+  4.6        1.16946  -.496274   .121109   .690149  
+  4.8        1.19581  -.519922   .115885   .698441  
+    5        1.22124  -.542761   .110998   .706353  
+
+Gamma : odds of differential assignment due to unobserved factors
+Q_mh+ : Mantel-Haenszel statistic (assumption: overestimation of treatment effect)
+Q_mh- : Mantel-Haenszel statistic (assumption: underestimation of treatment effect)
+p_mh+ : significance level (assumption: overestimation of treatment effect)
+p_mh- : significance level (assumption: underestimation of treatment effect)
+
 . export delimited using "nsw_all_minimal_pscore_age_education.csv", replace
 file nsw_all_minimal_pscore_age_education.csv saved
 
@@ -814,5 +916,5 @@ file nsw_all_random3_pscorefull.csv saved
       name:  <unnamed>
        log:  M:\Blackman\PropensityScoreMatching\PropensityScoreMatching\tests\results\all_results.log
   log type:  text
- closed on:  21 Jan 2016, 17:24:14
+ closed on:  26 Jan 2016, 16:12:41
 ----------------------------------------------------------------------------------------------------------------------------------
