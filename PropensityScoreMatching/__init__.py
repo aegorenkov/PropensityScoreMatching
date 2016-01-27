@@ -591,19 +591,31 @@ class BalanceStatistics(pd.DataFrame):
         return reg.fit()
 
 
-gamma = 1
-Y = 1
-N = 1
-N1 = 1
-
-
 class RosenbaumBounds(object):
-    def __init__(self):
-        self.N1 = 4.0
-        self.N0 = 3.0
-        self.N = self.N1 + self.N0
-        self.Y1 = 4.0
-        self.Y = 6.0
+    """
+    Computes Rosenbaum bounds for statistical matching with binary outcome, more accurately referred to
+    as Mantel-Haenzel bounds.
+
+    Based on:
+     Becker, Sascha O. and Caliendo, Marco, Mhbounds - Sensitivity Analysis for Average Treatment Effects (January 2007).
+     IZA Discussion Paper No. 2542. Available at SSRN: http://ssrn.com/abstract=958699
+    """
+
+    def __init__(self, statmatch):
+        self.statmatch = statmatch
+        self.treated_size = float
+        self.unique_control_size = float
+        self.total_observations = float
+        self.successes_treated = float
+        self.successes = float
+
+    def fit(self, outcome):
+        self.treated_size = float(self.statmatch.treated.sum())
+        self.unique_control_size = float(self.statmatch.matches.value_counts().count())
+        self.total_observations = float(self.treated_size + self.unique_control_size)
+        self.successes_treated = float(outcome[self.statmatch.treated == True].sum())
+        successes_controlled_unique = outcome.iloc[self.statmatch.matches.value_counts().index].sum()
+        self.successes = float(self.successes_treated + successes_controlled_unique)
 
     def q_mh(self, gamma, bound_type):
         EXPECTED_NO_EFFECT = 0.5
@@ -612,30 +624,27 @@ class RosenbaumBounds(object):
             return np.abs(Y - E)
 
         if gamma == 1:
-            n1 = self.N1
-            n0 = self.N0
-            n = self.N
-            y = self.Y
-            y1 = self.Y1
-
-            j6 = n1 * y / n
-            j8 = n1 * n0 * y * (n - y) / ((n ** 2) * (n - 1.0))
+            failures = self.total_observations - self.successes
+            hypergeometric_mean = self.treated_size * self.successes / self.total_observations
+            hypergeometric_variance = (self.treated_size * self.unique_control_size * self.successes) * (failures) / \
+                                      ((self.total_observations ** 2) * (self.total_observations - 1.0))
 
             q_mh_plus = self._standard_z_score(
-                value=abs_diff(y1, j6),
-                mean=EXPECTED_NO_EFFECT,
-                standard_deviation=np.sqrt(j8)
+                    value=abs_diff(self.successes_treated, hypergeometric_mean),
+                    mean=EXPECTED_NO_EFFECT,
+                    standard_deviation=np.sqrt(hypergeometric_variance)
             )
 
         else:
-            expected_successes = self._expected_successes(gamma=gamma, bound_type=bound_type, successes=self.Y,
-                                                          treated_size=self.N1,
-                                                          total_observations=self.N)
+            expected_successes = self._expected_successes(gamma=gamma, bound_type=bound_type, successes=self.successes,
+                                                          treated_size=self.treated_size,
+                                                          total_observations=self.total_observations)
             q_mh_plus = self._standard_z_score(
-                value=abs_diff(self.Y1, expected_successes),
-                mean=EXPECTED_NO_EFFECT,
-                standard_deviation=np.sqrt(
-                    self._variance_treated_successes(expected_successes, self.Y, self.N1, self.N))
+                    value=abs_diff(self.successes_treated, expected_successes),
+                    mean=EXPECTED_NO_EFFECT,
+                    standard_deviation=np.sqrt(
+                            self._variance_treated_successes(expected_successes, self.successes, self.treated_size,
+                                                             self.total_observations))
             )
         return q_mh_plus
 
@@ -730,14 +739,12 @@ class RosenbaumBounds(object):
         :return: float
         """
 
-        hypergeometric_variance_approximation = (
-                                                    (1 / expected_successes) +
-                                                    (1 / (successes - expected_successes)) +
-                                                    (1 / (treated_size - expected_successes)) +
-                                                    (1 / (
-                                                        total_observations - successes - treated_size + expected_successes))
-                                                ) ** -1
-        return hypergeometric_variance_approximation
+        return (
+                   (1 / expected_successes) +
+                   (1 / (successes - expected_successes)) +
+                   (1 / (treated_size - expected_successes)) +
+                   (1 / (total_observations - successes - treated_size + expected_successes))
+               ) ** -1
 
     def _standard_z_score(self, value, mean, standard_deviation):
         """

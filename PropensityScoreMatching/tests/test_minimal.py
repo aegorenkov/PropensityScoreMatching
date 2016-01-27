@@ -210,16 +210,17 @@ class TestFitReg(unittest.TestCase):
 
 class TestRosenbaumBounds(unittest.TestCase):
     def setUp(self):
-        # filepath = os.path.join('results', 'nsw_all_minimal_pscore_age_education.csv')
-        # self.data = pd.read_csv(filepath)
-        # self.outcome = self.data[u'Black']
-        # self.treated = self.data[u'Treated']
-        # self.design_vars = [u'Age', u'Education']
-        # self.design_matrix = self.data[self.design_vars]
-        # self.psm = PSM.StatisticalMatching()
-        # self.psm.fit(self.treated, self.design_matrix, names=self.design_vars)
-        # self.psm.match()
-        self.bounds = PSM.RosenbaumBounds()
+        filepath = os.path.join('results', 'nsw_all_minimal_pscore_age_education.csv')
+        self.data = pd.read_csv(filepath)
+        self.outcome = self.data[u'Black']
+        self.treated = self.data[u'Treated']
+        self.design_vars = [u'Age', u'Education']
+        self.design_matrix = self.data[self.design_vars]
+        self.psm = PSM.StatisticalMatching()
+        self.psm.fit(self.treated, self.design_matrix, names=self.design_vars)
+        self.psm.match()
+        self.bounds = PSM.RosenbaumBounds(self.psm)
+        self.bounds.fit(self.outcome)
 
     def test_expected_successes_gamma_1(self):
         self.assertEqual(self.bounds._expected_successes(1, 'upper', 6.0, 4.0, 7.0), None)
@@ -228,13 +229,13 @@ class TestRosenbaumBounds(unittest.TestCase):
         self.assertEqual(self.bounds._expected_successes(1.2, 'upper', 6.0, 4.0, 7.0), 3.4671336893257196)
 
     def test_q_mh_plus_1(self):
-        self.assertAlmostEqual(self.bounds.q_mh_plus(gamma=1), 0.144338, 5)
+        self.assertAlmostEqual(self.bounds.q_mh_plus(gamma=1), 0.353553, 5)
 
     def test_q_mh_plus_1_2(self):
-        self.assertAlmostEqual(self.bounds.q_mh_plus(gamma=1.2), 0.071257, 5)
+        self.assertAlmostEqual(self.bounds.q_mh_plus(gamma=1.2), 0.301918, 5)
 
     def test_q_mh_minus_1(self):
-        self.assertAlmostEqual(self.bounds.q_mh_minus(gamma=1), 0.144338, 5)
+        self.assertAlmostEqual(self.bounds.q_mh_minus(gamma=1), 0.353553, 5)
 
     def test_q_mh_minus_1_2(self):
-        self.assertAlmostEqual(self.bounds.q_mh_minus(gamma=1.2), 0.24138, 5)
+        self.assertAlmostEqual(self.bounds.q_mh_minus(gamma=1.2), 0.47471, 5)
